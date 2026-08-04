@@ -13,10 +13,10 @@ export function DiscoBall({ open }: Props) {
       aria-hidden
       className="pointer-events-none fixed z-[1] select-none"
       style={{
-        top: "-20vh",
-        right: "-12vw",
-        width: "min(58vw, 660px)",
-        height: "min(58vw, 660px)",
+        top: "-10vh",
+        right: "-6vw",
+        width: "min(46vw, 540px)",
+        height: "min(46vw, 540px)",
         opacity: open ? 0.95 : 0.4,
         filter: open ? "saturate(1.05)" : "saturate(0.5) blur(1px)",
         transition: "opacity 2s ease, filter 2s ease",
