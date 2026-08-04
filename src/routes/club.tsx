@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePlayer } from "@/lib/player";
 import { ClubStatus } from "@/components/club/ClubStatus";
 import { ClubAtmosphere } from "@/components/club/ClubAtmosphere";
