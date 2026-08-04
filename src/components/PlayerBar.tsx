@@ -23,6 +23,13 @@ export function PlayerBar() {
             </svg>
           )}
         </button>
+        {current.cover_art && (
+          <img
+            src={current.cover_art}
+            alt={`${current.artist} — ${current.title} cover art`}
+            className="h-11 w-11 shrink-0 rounded-md border border-border object-cover"
+          />
+        )}
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-xl leading-tight tracking-wide">
             {current.title}
