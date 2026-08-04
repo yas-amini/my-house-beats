@@ -80,38 +80,7 @@ export function ClubAtmosphere({ open, palette }: Props) {
         }}
       />
 
-      {/* 4 — sparse star-filter flares around the brightest points */}
-      {open &&
-        [
-          { top: "16%", left: "72%", size: 150, delay: "0s", color: palette.c },
-          { top: "34%", left: "88%", size: 96, delay: "3.4s", color: palette.a },
-          { top: "62%", left: "18%", size: 110, delay: "6.1s", color: palette.b },
-          { top: "78%", left: "58%", size: 78, delay: "9.3s", color: palette.c },
-        ].map((f, i) => (
-          <div
-            key={i}
-            className="club-flare absolute"
-            style={{
-              top: f.top,
-              left: f.left,
-              width: f.size,
-              height: f.size,
-              marginLeft: -f.size / 2,
-              marginTop: -f.size / 2,
-              animationDelay: f.delay,
-              ["--flare" as string]: f.color,
-            }}
-          >
-            <span className="club-flare-bar" />
-            <span className="club-flare-bar club-flare-bar--v" />
-            <span
-              className="absolute inset-[38%] rounded-full"
-              style={{ background: f.color, filter: "blur(10px)" }}
-            />
-          </div>
-        ))}
-
-      {/* 5 — vignette so the room has walls */}
+      {/* 4 — vignette so the room has walls */}
       <div
         className="absolute inset-0"
         style={{
@@ -119,7 +88,7 @@ export function ClubAtmosphere({ open, palette }: Props) {
         }}
       />
 
-      {/* 6 — analog film grain */}
+      {/* 5 — analog film grain */}
       <div
         className={`absolute inset-0 ${open ? "club-grain" : ""}`}
         style={{
