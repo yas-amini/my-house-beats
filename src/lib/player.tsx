@@ -14,7 +14,12 @@ type PlayerState = {
   playing: boolean;
   position: number;
   duration: number;
+  queue: Track[];
+  queueLabel: string | null;
   select: (track: Track) => void;
+  playList: (list: Track[], startIndex?: number, label?: string) => void;
+  next: () => void;
+  prev: () => void;
   toggle: () => void;
   seek: (ms: number) => void;
 };
@@ -42,7 +47,9 @@ function widgetUrl(url: string) {
 }
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  const [current, setCurrent] = useState<Track | null>(null);
+  const [queue, setQueue] = useState<Track[]>([]);
+  const [queueLabel, setQueueLabel] = useState<string | null>(null);
+  const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -50,6 +57,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const widgetRef = useRef<any>(null);
   const seekingRef = useRef(false);
   const loadTokenRef = useRef(0);
+  const advanceRef = useRef<() => void>(() => {});
+
+  const current = queue[index] ?? null;
 
   useEffect(() => {
     if (window.SC) return;
@@ -84,6 +94,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         if (token !== loadTokenRef.current) return;
         setPlaying(false);
         setPosition(0);
+        advanceRef.current();
       });
       w.bind("playProgress", (e: { currentPosition: number }) => {
         if (token !== loadTokenRef.current || seekingRef.current) return;
@@ -130,9 +141,40 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
   }, [current]);
 
-  const select = useCallback((track: Track) => {
-    setCurrent((prev) => (prev?.id === track.id ? prev : track));
+  const playList = useCallback((list: Track[], startIndex = 0, label?: string) => {
+    const playable = list.filter((t) => t.soundcloud_url);
+    if (!playable.length) return;
+    const target = list[startIndex];
+    const i = target ? Math.max(0, playable.findIndex((t) => t.id === target.id)) : 0;
+    setQueue(playable);
+    setQueueLabel(label ?? null);
+    setIndex(i);
   }, []);
+
+  const select = useCallback((track: Track) => {
+    setQueue((prev) => {
+      const at = prev.findIndex((t) => t.id === track.id);
+      if (at >= 0) {
+        setIndex(at);
+        return prev;
+      }
+      setIndex(0);
+      setQueueLabel(null);
+      return [track];
+    });
+  }, []);
+
+  const next = useCallback(() => {
+    setIndex((i) => (queue.length ? (i + 1) % queue.length : 0));
+  }, [queue.length]);
+
+  const prev = useCallback(() => {
+    setIndex((i) => (queue.length ? (i - 1 + queue.length) % queue.length : 0));
+  }, [queue.length]);
+
+  useEffect(() => {
+    advanceRef.current = next;
+  }, [next]);
 
   const toggle = useCallback(() => {
     const w = widgetRef.current;
@@ -156,7 +198,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   return (
     <PlayerContext.Provider
-      value={{ current, playing, position, duration, select, toggle, seek }}
+      value={{
+        current,
+        playing,
+        position,
+        duration,
+        queue: queue.slice(index + 1),
+        queueLabel,
+        select,
+        playList,
+        next,
+        prev,
+        toggle,
+        seek,
+      }}
     >
       {children}
       <iframe
