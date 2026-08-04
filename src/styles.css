@@ -148,3 +148,103 @@
     color: var(--color-foreground);
   }
 }
+
+/* ---------------------------------------------------------------
+ * Broadcast (Radio) design tokens + motion.
+ * Scoped to .studio so the archive keeps its warm cream identity.
+ * --------------------------------------------------------------- */
+.studio {
+  --studio-bg: oklch(0.16 0.012 92);
+  --studio-bg-2: oklch(0.22 0.02 70);
+  --studio-ink: oklch(0.96 0.01 91.5);
+  --studio-dim: oklch(0.66 0.012 91.5);
+  --studio-line: oklch(1 0 0 / 14%);
+  --studio-signal: oklch(0.62 0.24 262.9);
+  --studio-live: oklch(0.66 0.23 27);
+
+  background-color: var(--studio-bg);
+  color: var(--studio-ink);
+}
+
+.studio ::selection {
+  background: var(--studio-signal);
+  color: var(--studio-ink);
+}
+
+/* atmospheric colour fields that drift slowly behind everything */
+@keyframes studio-drift-a {
+  0%   { transform: translate3d(-6%, -4%, 0) scale(1.1); }
+  50%  { transform: translate3d(8%, 6%, 0) scale(1.35); }
+  100% { transform: translate3d(-6%, -4%, 0) scale(1.1); }
+}
+@keyframes studio-drift-b {
+  0%   { transform: translate3d(6%, 8%, 0) scale(1.25); }
+  50%  { transform: translate3d(-8%, -6%, 0) scale(1.05); }
+  100% { transform: translate3d(6%, 8%, 0) scale(1.25); }
+}
+.studio-field-a { animation: studio-drift-a 46s ease-in-out infinite; }
+.studio-field-b { animation: studio-drift-b 62s ease-in-out infinite; }
+
+/* ON AIR lamp */
+@keyframes studio-lamp {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(0.72); opacity: 0.45; }
+}
+@keyframes studio-halo {
+  0%   { transform: scale(0.9); opacity: 0.55; }
+  70%  { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+.studio-lamp { animation: studio-lamp 1.35s ease-in-out infinite; }
+.studio-halo { animation: studio-halo 1.35s ease-out infinite; }
+
+/* artwork breathing — extremely slow, no rotation */
+@keyframes studio-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+.studio-breathe { animation: studio-breathe 14s ease-in-out infinite; }
+
+/* transmission sweep across the frame of the artwork */
+@keyframes studio-sweep {
+  0%   { transform: translateY(-120%); opacity: 0; }
+  15%  { opacity: 0.75; }
+  85%  { opacity: 0.75; }
+  100% { transform: translateY(120%); opacity: 0; }
+}
+.studio-sweep { animation: studio-sweep 6.5s linear infinite; }
+
+/* ticker marquee */
+@keyframes studio-ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.studio-ticker { animation: studio-ticker 38s linear infinite; }
+
+/* station handoff */
+@keyframes studio-handoff {
+  0%   { opacity: 0; letter-spacing: 0.6em; }
+  18%  { opacity: 1; letter-spacing: 0.3em; }
+  72%  { opacity: 1; letter-spacing: 0.3em; }
+  100% { opacity: 0; letter-spacing: 0.14em; }
+}
+.studio-handoff { animation: studio-handoff 1.9s ease-in-out forwards; }
+
+@keyframes studio-tune-in {
+  0%   { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.studio-tune-in { animation: studio-tune-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes studio-scanline {
+  from { transform: translateY(0); }
+  to   { transform: translateY(6px); }
+}
+.studio-scan { animation: studio-scanline 0.9s steps(3) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-field-a, .studio-field-b, .studio-lamp, .studio-halo,
+  .studio-breathe, .studio-sweep, .studio-ticker, .studio-scan {
+    animation: none !important;
+  }
+}
