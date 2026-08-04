@@ -75,17 +75,17 @@ export function StarFilter({ open, palette }: { open: boolean; palette: Palette 
         size: bright ? rand(90, 150) : rand(26, 72),
         rot: rand(-14, 14),
         peak: bright ? rand(0.85, 1) : rand(0.28, 0.62),
-        dur: bright ? rand(320, 620) : rand(520, 1150),
+        dur: bright ? rand(420, 820) : rand(720, 1550),
         tint,
       };
 
-      setStars((prev) => [...prev.slice(-5), star]);
+      setStars((prev) => [...prev.slice(-6), star]);
       window.setTimeout(() => {
         setStars((prev) => prev.filter((s) => s.key !== star.key));
       }, star.dur + 80);
 
-      // irregular, occasionally clustered timing
-      const gap = Math.random() < 0.25 ? rand(60, 180) : rand(340, 1400);
+      // irregular, occasionally clustered timing — a touch more frequent now
+      const gap = Math.random() < 0.35 ? rand(50, 160) : rand(280, 1100);
       timer = setTimeout(spawn, gap);
     };
 
