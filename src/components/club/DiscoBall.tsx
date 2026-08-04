@@ -1,5 +1,5 @@
 const SKETCHFAB_SRC =
-  "https://sketchfab.com/models/b949297d4ecb48a89ea3544621c999c9/embed?autospin=1&autostart=1&camera=0&preload=1&transparent=1&ui_hint=0&ui_controls=0&ui_infos=0&ui_watermark=0";
+  "https://sketchfab.com/models/b949297d4ecb48a89ea3544621c999c9/embed?autospin=0.2&autostart=1&camera=0&preload=1&transparent=1&ui_hint=0&ui_controls=0&ui_help=0&ui_infos=0&ui_watermark=0";
 
 type Props = { open: boolean };
 
