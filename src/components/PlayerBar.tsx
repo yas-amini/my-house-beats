@@ -1,0 +1,42 @@
+import { usePlayer } from "@/lib/player";
+
+export function PlayerBar() {
+  const { current, playing, toggle } = usePlayer();
+  if (!current) return null;
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card/95 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 py-3">
+        <button
+          onClick={toggle}
+          aria-label={playing ? "Pause" : "Play"}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105"
+        >
+          {playing ? (
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
+              <rect x="0" y="0" width="4.5" height="16" rx="1" />
+              <rect x="9.5" y="0" width="4.5" height="16" rx="1" />
+            </svg>
+          ) : (
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
+              <path d="M1 1.2c0-.9 1-1.4 1.7-.9l10 6.8c.6.4.6 1.4 0 1.8l-10 6.8c-.7.5-1.7 0-1.7-.9V1.2z" />
+            </svg>
+          )}
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-display text-xl leading-tight tracking-wide">
+            {current.title}
+          </p>
+          <p className="truncate font-mono text-xs text-muted-foreground">
+            {current.artist} · {current.dj}
+          </p>
+        </div>
+        {current.year && (
+          <span className="hidden shrink-0 font-mono text-xs text-muted-foreground sm:block">
+            {current.year}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,24 +1,54 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { curators, tracks } from "@/lib/tracks";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "My House — House Music Archive" },
+      {
+        name: "description",
+        content:
+          "627 house cuts from 1987 to 2026, curated from battles, crates and dig sessions. Browse by curator and play straight from SoundCloud.",
+      },
+      { property: "og:title", content: "My House — House Music Archive" },
+      {
+        property: "og:description",
+        content: "627 house cuts, 1987–2026, curated from battles, crates and dig sessions.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="mx-auto max-w-6xl px-5 pb-32 pt-16">
+      <header className="border-b border-border pb-10">
+        <h1 className="font-display text-7xl leading-[0.9] tracking-wide sm:text-8xl">
+          My House
+        </h1>
+        <p className="mt-4 font-mono text-sm text-muted-foreground">
+          {tracks.length} cuts · 1987–2026 · curated from battles, crates, and dig sessions.
+        </p>
+      </header>
+
+      <section className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {curators.map((c) => (
+          <Link
+            key={c.slug}
+            to="/curator/$slug"
+            params={{ slug: c.slug }}
+            className="group rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary"
+          >
+            <h2 className="font-display text-3xl tracking-wide transition-colors group-hover:text-primary">
+              {c.name}
+            </h2>
+            <p className="mt-2 font-mono text-xs text-muted-foreground">
+              {c.count} track{c.count === 1 ? "" : "s"}
+            </p>
+          </Link>
+        ))}
+      </section>
+    </main>
   );
 }
