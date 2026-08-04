@@ -125,8 +125,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // Radio is a full broadcast environment with its own transport controls.
-  const onAir = pathname.startsWith("/radio");
+  // Club Mode is a full environment with its own transport controls.
+  const inClub = pathname.startsWith("/club");
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -134,7 +134,7 @@ function RootComponent() {
         <SiteHeader />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
-        {!onAir && <PlayerBar />}
+        {!inClub && <PlayerBar />}
       </PlayerProvider>
     </QueryClientProvider>
   );

@@ -78,7 +78,7 @@ export function PlayerBar() {
         </div>
         {queue.length > 0 && (
           <Link
-            to="/radio"
+            to="/club"
             className="hidden shrink-0 font-mono text-[11px] text-muted-foreground hover:text-primary sm:block"
           >
             {queueLabel ? `${queueLabel} · ` : ""}
