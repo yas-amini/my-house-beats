@@ -137,7 +137,7 @@ function ClubPage() {
 
                 <div className="mt-6 flex items-center gap-4">
                   <button
-                    onClick={toggle}
+                    onClick={blocked ? retry : toggle}
                     aria-label={playing ? "Pause" : "Play"}
                     className="flex h-14 w-14 items-center justify-center rounded-full transition-transform hover:scale-105"
                     style={{ background: "var(--club-accent)", color: "#160d08" }}
@@ -161,8 +161,21 @@ function ClubPage() {
                     Next record
                   </button>
                 </div>
+
+                {blocked && (
+                  <button
+                    onClick={retry}
+                    className="mt-5 w-full border px-4 py-3 text-left text-sm"
+                    style={{ borderColor: "var(--club-line)", borderRadius: 6, color: "var(--club-ink)" }}
+                  >
+                    {status === "error"
+                      ? "This record wouldn't load. Tap to try again, or skip to the next one."
+                      : "Your browser is holding the sound back. Tap here to play."}
+                  </button>
+                )}
               </div>
             </article>
+
           ) : (
             <p className="mt-16 text-lg" style={{ color: "var(--club-dim)" }}>
               The record is about to drop.
