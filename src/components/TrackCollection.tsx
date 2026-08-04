@@ -95,7 +95,7 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                     alt={`${t.artist} — ${t.title} cover art`}
                     loading="lazy"
                     className={`h-full w-full object-cover transition-transform duration-500 ${
-                      active ? "scale-[1.04]" : "group-hover:scale-[1.03]"
+                      active ? "scale-[1.05]" : "group-hover:scale-[1.03]"
                     }`}
                   />
                 ) : (
