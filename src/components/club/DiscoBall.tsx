@@ -13,10 +13,10 @@ export function DiscoBall({ open }: Props) {
       aria-hidden
       className="pointer-events-none fixed z-[1] select-none"
       style={{
-        top: "-16vh",
-        right: "-8vw",
-        width: "min(62vw, 720px)",
-        height: "min(62vw, 720px)",
+        top: "-20vh",
+        right: "-12vw",
+        width: "min(58vw, 660px)",
+        height: "min(58vw, 660px)",
         opacity: open ? 0.95 : 0.4,
         filter: open ? "saturate(1.05)" : "saturate(0.5) blur(1px)",
         transition: "opacity 2s ease, filter 2s ease",
@@ -44,7 +44,14 @@ export function DiscoBall({ open }: Props) {
         allow="autoplay; fullscreen; xr-spatial-tracking"
         loading="lazy"
         className="relative h-full w-full"
-        style={{ border: 0, background: "transparent" }}
+        style={{
+          border: 0,
+          background: "transparent",
+          // screen blending drops the viewer's black plate so the ball hangs in the room
+          mixBlendMode: "screen",
+          maskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
+          WebkitMaskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
+        }}
       />
     </div>
   );
