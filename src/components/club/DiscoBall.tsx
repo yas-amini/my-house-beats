@@ -1,22 +1,19 @@
 const SKETCHFAB_SRC =
-  "https://sketchfab.com/models/b949297d4ecb48a89ea3544621c999c9/embed?autospin=0.2&autostart=1&camera=0&preload=1&transparent=1&ui_infos=0&ui_controls=0&ui_watermark=0&ui_watermark_link=0&ui_hint=0&ui_stop=0&ui_help=0&ui_settings=0&ui_vr=0&ui_ar=0&ui_fullscreen=0&ui_animations=0&ui_annotations=0&ui_loading=0&scrollwheel=0&dnt=1";
+  "https://sketchfab.com/models/b949297d4ecb48a89ea3544621c999c9/embed?autospin=1&autostart=1&camera=0&preload=1&transparent=1&ui_hint=0";
 
 type Props = { open: boolean };
 
 /**
- * The disco ball hangs in the room: oversized, partially off the top-right of
- * the composition, sitting behind everything and casting light through the haze.
+ * The disco ball hangs in the room: oversized, sitting behind everything and
+ * casting light through the haze. On mobile it stays fully on-screen, tucked
+ * into the top-right corner.
  */
 export function DiscoBall({ open }: Props) {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed z-[1] select-none"
+      className="sketchfab-embed-wrapper pointer-events-none fixed right-0 top-[-4vh] z-[1] h-[56vw] max-h-[300px] w-[56vw] max-w-[300px] select-none sm:right-[-4vw] sm:top-[-8vh] sm:h-[min(46vw,540px)] sm:max-h-none sm:w-[min(46vw,540px)] sm:max-w-none"
       style={{
-        top: "-10vh",
-        right: "-6vw",
-        width: "min(46vw, 540px)",
-        height: "min(46vw, 540px)",
         opacity: open ? 0.95 : 0.4,
         filter: open ? "saturate(1.05)" : "saturate(0.5) blur(1px)",
         transition: "opacity 2s ease, filter 2s ease",
@@ -39,9 +36,10 @@ export function DiscoBall({ open }: Props) {
         }}
       />
       <iframe
-        title="Disco ball animated by SusanKing on Sketchfab"
+        title="Disco ball animated"
         src={SKETCHFAB_SRC}
         allow="autoplay; fullscreen; xr-spatial-tracking"
+        allowFullScreen
         loading="lazy"
         className="relative h-full w-full"
         style={{
@@ -64,34 +62,32 @@ export function DiscoBallCredit() {
       className="font-mono text-[9px] uppercase tracking-[0.24em]"
       style={{ color: "var(--club-dim)" }}
     >
-      Disco ball{" "}
       <a
-        href="https://sketchfab.com/3d-models/disco-ball-animated-b949297d4ecb48a89ea3544621c999c9"
+        href="https://sketchfab.com/3d-models/disco-ball-animated-b949297d4ecb48a89ea3544621c999c9?utm_medium=embed&utm_campaign=share-popup&utm_content=b949297d4ecb48a89ea3544621c999c9"
         target="_blank"
-        rel="noreferrer noopener"
+        rel="nofollow noreferrer noopener"
         className="underline underline-offset-4"
       >
-        "Disco ball animated"
+        Disco ball animated
       </a>{" "}
       by{" "}
       <a
-        href="https://sketchfab.com/SusanKing"
+        href="https://sketchfab.com/krolzuzannapl?utm_medium=embed&utm_campaign=share-popup&utm_content=b949297d4ecb48a89ea3544621c999c9"
         target="_blank"
-        rel="noreferrer noopener"
+        rel="nofollow noreferrer noopener"
         className="underline underline-offset-4"
       >
         SusanKing
       </a>{" "}
       on{" "}
       <a
-        href="https://sketchfab.com"
+        href="https://sketchfab.com?utm_medium=embed&utm_campaign=share-popup&utm_content=b949297d4ecb48a89ea3544621c999c9"
         target="_blank"
-        rel="noreferrer noopener"
+        rel="nofollow noreferrer noopener"
         className="underline underline-offset-4"
       >
         Sketchfab
-      </a>{" "}
-      · CC BY 4.0
+      </a>
     </p>
   );
 }

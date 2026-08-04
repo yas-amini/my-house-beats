@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { usePlayer } from "@/lib/player";
 import { slugify } from "@/lib/tracks";
 
@@ -13,25 +13,50 @@ function fmt(ms: number) {
 export function PlayerBar() {
   const { current, playing, toggle, position, duration, seek, next, prev, queue, queueLabel } =
     usePlayer();
+  const isClub = useRouterState({
+    select: (s) => s.location.pathname.startsWith("/club"),
+  });
   if (!current) return null;
 
   const pct = duration > 0 ? Math.min(100, (position / duration) * 100) : 0;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card/95 backdrop-blur">
+    <div
+      className={`fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur ${
+        isClub ? "club border-transparent" : "border-border bg-card/95"
+      }`}
+      style={
+        isClub
+          ? {
+              borderTopColor: "var(--club-line)",
+              background: "color-mix(in oklab, var(--club-bg) 88%, transparent)",
+              color: "var(--club-ink)",
+            }
+          : undefined
+      }
+    >
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 pt-3">
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={prev}
             aria-label="Previous track"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border font-mono text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-colors ${
+              isClub
+                ? "border-[color:var(--club-line)] text-[color:var(--club-dim)] hover:text-[color:var(--club-accent)]"
+                : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
           >
             ‹
           </button>
           <button
             onClick={toggle}
             aria-label={playing ? "Pause" : "Play"}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105"
+            className={`flex h-11 w-11 items-center justify-center rounded-full transition-transform hover:scale-105 ${isClub ? "" : "bg-primary text-primary-foreground"}`}
+            style={
+              isClub
+                ? { background: "var(--club-accent)", color: "var(--club-bg)" }
+                : undefined
+            }
           >
             {playing ? (
               <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
@@ -47,7 +72,11 @@ export function PlayerBar() {
           <button
             onClick={next}
             aria-label="Next track"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border font-mono text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-colors ${
+              isClub
+                ? "border-[color:var(--club-line)] text-[color:var(--club-dim)] hover:text-[color:var(--club-accent)]"
+                : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
           >
             ›
           </button>
@@ -58,19 +87,22 @@ export function PlayerBar() {
             key={current.id}
             src={current.cover_art}
             alt={`${current.artist} — ${current.title} cover art`}
-            className="h-11 w-11 shrink-0 animate-scale-in rounded-md border border-border object-cover"
+            className="h-11 w-11 shrink-0 animate-scale-in rounded-md border object-cover"
+            style={{ borderColor: isClub ? "var(--club-line)" : "hsl(var(--border))" }}
           />
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-xl leading-tight tracking-wide">
             {current.artist} — {current.title}
           </p>
-          <p className="truncate font-mono text-[11px] text-muted-foreground">
+          <p className="truncate font-mono text-[11px]"
+            style={{ color: isClub ? "var(--club-dim)" : undefined }}>
             Released {current.year ?? "—"} · discovered through{" "}
             <Link
               to="/curator/$slug"
               params={{ slug: slugify(current.dj as string) }}
               className="underline decoration-border underline-offset-2 hover:text-primary"
+              style={isClub ? { color: "var(--club-accent)" } : undefined}
             >
               {current.dj}
             </Link>
@@ -80,6 +112,7 @@ export function PlayerBar() {
           <Link
             to="/club"
             className="hidden shrink-0 font-mono text-[11px] text-muted-foreground hover:text-primary sm:block"
+            style={isClub ? { color: "var(--club-dim)" } : undefined}
           >
             {queueLabel ? `${queueLabel} · ` : ""}
             {queue.length} up next
@@ -87,18 +120,40 @@ export function PlayerBar() {
         )}
       </div>
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3">
-        <span className="w-10 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
+        <span
+          className="w-10 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground"
+          style={isClub ? { color: "var(--club-dim)" } : undefined}
+        >
           {fmt(position)}
         </span>
         <div className="relative flex-1">
-          <div className="h-1 w-full rounded-full bg-border" />
+          <div
+            className="h-1 w-full rounded-full bg-border"
+            style={
+              isClub
+                ? { background: "color-mix(in oklab, var(--club-ink) 20%, transparent)" }
+                : undefined
+            }
+          />
           <div
             className="pointer-events-none absolute left-0 top-0 h-1 rounded-full bg-primary transition-[width] duration-200 ease-linear"
-            style={{ width: `${pct}%` }}
+            style={{
+              width: `${pct}%`,
+              ...(isClub ? { background: "var(--club-accent)" } : {}),
+            }}
           />
           <div
             className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-primary shadow-sm transition-[left] duration-200 ease-linear"
-            style={{ left: `${pct}%` }}
+            style={{
+              left: `${pct}%`,
+              ...(isClub
+                ? {
+                    background: "var(--club-accent)",
+                    borderColor: "var(--club-line)",
+                    boxShadow: "0 0 14px var(--club-accent)",
+                  }
+                : {}),
+            }}
           />
           <input
             type="range"
@@ -112,9 +167,13 @@ export function PlayerBar() {
             className="absolute inset-x-0 top-1/2 h-4 w-full -translate-y-1/2 cursor-pointer opacity-0"
           />
         </div>
-        <span className="w-10 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+        <span
+          className="w-10 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground"
+          style={isClub ? { color: "var(--club-dim)" } : undefined}
+        >
           {fmt(duration)}
         </span>
+
       </div>
     </div>
   );
