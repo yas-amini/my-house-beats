@@ -43,7 +43,7 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                     alt=""
                     loading="lazy"
                     className={`h-10 w-10 rounded border border-border object-cover transition-transform duration-300 ${
-                      active ? "scale-105" : "group-hover:scale-105"
+                      active ? "scale-[1.04]" : "group-hover:scale-[1.03]"
                     }`}
                   />
                 ) : (
@@ -83,10 +83,10 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
               aria-label={`Play ${t.artist} — ${t.title}`}
             >
               <div
-                className={`relative aspect-square overflow-hidden rounded-lg border transition-[transform,border-color,box-shadow] duration-300 ${
+                className={`relative aspect-square overflow-hidden rounded-lg border transition-[border-color] duration-300 ${
                   active
-                    ? "-translate-y-1 border-primary shadow-[0_12px_28px_-18px_var(--color-primary)]"
-                    : "border-border group-hover:-translate-y-0.5 group-hover:border-foreground/30"
+                    ? "border-primary"
+                    : "border-border group-hover:border-foreground/30"
                 }`}
               >
                 {t.cover_art ? (
@@ -95,7 +95,7 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                     alt={`${t.artist} — ${t.title} cover art`}
                     loading="lazy"
                     className={`h-full w-full object-cover transition-transform duration-500 ${
-                      active ? "scale-[1.04]" : "group-hover:scale-[1.03]"
+                      active ? "scale-[1.05]" : "group-hover:scale-[1.03]"
                     }`}
                   />
                 ) : (
