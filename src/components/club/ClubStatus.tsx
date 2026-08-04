@@ -29,10 +29,10 @@ export function ClubStatus({ open }: Props) {
         />
       </span>
       <span
-        className="font-mono text-[11px] uppercase tracking-[0.34em]"
+        className="font-mono text-[11px] tracking-[0.18em]"
         style={{ color: open ? "var(--club-ink)" : "var(--club-dim)" }}
       >
-        {open ? "Club open" : "Club paused"}
+        {open ? "Playing" : "Paused"}
       </span>
     </div>
   );

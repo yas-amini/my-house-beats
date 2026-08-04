@@ -44,6 +44,41 @@ export function tracksForCurator(name: string) {
   return tracks.filter((t) => t.dj === name);
 }
 
+/* ---------- dance floors ---------- */
+
+export type Floor = {
+  id: string;
+  /** "Main floor" or "Floor 02" */
+  number: string;
+  name: string;
+  count: number;
+  curator: string | null;
+};
+
+/** A curator only earns a floor when there's enough music to fill a room. */
+const FLOOR_MIN_TRACKS = 12;
+
+export const floors: Floor[] = [
+  { id: "main", number: "Main floor", name: "All records", count: tracks.length, curator: null },
+  ...curators
+    .filter((c) => c.count >= FLOOR_MIN_TRACKS && c.name !== UNCREDITED)
+    .map((c, i) => ({
+      id: c.slug,
+      number: `Floor ${String(i + 2).padStart(2, "0")}`,
+      name: c.name,
+      count: c.count,
+      curator: c.name,
+    })),
+];
+
+export function floorById(id: string) {
+  return floors.find((f) => f.id === id) ?? floors[0]!;
+}
+
+export function tracksForFloor(floor: Floor) {
+  return floor.curator ? tracksForCurator(floor.curator) : tracks;
+}
+
 /* ---------- time ---------- */
 
 export const years: number[] = Array.from(
