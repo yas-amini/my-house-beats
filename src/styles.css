@@ -443,7 +443,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .club-drift-a, .club-drift-b, .club-drift-c, .club-haze, .club-grain,
-  .club-flare, .club-ball-glow, .club-lamp, .club-halo, .club-breathe,
+  .club-star, .club-ball-glow, .club-lamp, .club-halo, .club-breathe,
   .club-rake, .club-enter {
     animation: none !important;
   }
