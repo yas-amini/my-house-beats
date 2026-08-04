@@ -43,7 +43,7 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                     alt=""
                     loading="lazy"
                     className={`h-10 w-10 rounded border border-border object-cover transition-transform duration-300 ${
-                      active ? "scale-105" : "group-hover:scale-105"
+                      active ? "scale-[1.04]" : "group-hover:scale-[1.03]"
                     }`}
                   />
                 ) : (
