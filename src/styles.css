@@ -397,3 +397,48 @@
     animation: none !important;
   }
 }
+
+/* club seek bar — a thin warm line with a soft playhead */
+.club-seek {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  background: transparent;
+  cursor: pointer;
+}
+.club-seek::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--club-accent) var(--p, 0%),
+    color-mix(in oklab, var(--club-ink) 22%, transparent) var(--p, 0%)
+  );
+}
+.club-seek::-moz-range-track {
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--club-ink) 22%, transparent);
+}
+.club-seek::-moz-range-progress {
+  height: 2px;
+  border-radius: 999px;
+  background: var(--club-accent);
+}
+.club-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 11px;
+  height: 11px;
+  margin-top: -4.5px;
+  border-radius: 999px;
+  background: var(--club-accent);
+  box-shadow: 0 0 14px var(--club-accent);
+}
+.club-seek::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--club-accent);
+  box-shadow: 0 0 14px var(--club-accent);
+}
