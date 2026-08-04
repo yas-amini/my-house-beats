@@ -201,7 +201,7 @@ function FloorNav({
   onPick: (id: string) => void;
 }) {
   return (
-    <nav className="md:sticky md:top-24 md:self-start">
+    <nav className="min-w-0 md:sticky md:top-24 md:self-start">
       <p className="mb-4 font-mono text-[11px] tracking-widest" style={{ color: "var(--club-dim)" }}>
         Dance floors
       </p>
