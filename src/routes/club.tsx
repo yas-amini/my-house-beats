@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "@/lib/player";
 import { ClubStatus } from "@/components/club/ClubStatus";
 import { ClubAtmosphere } from "@/components/club/ClubAtmosphere";
@@ -35,7 +35,6 @@ function fmt(ms: number) {
 function ClubPage() {
   const { current, playing, status, blocked, toggle, next, position, duration, seek, playList, retry } =
     usePlayer();
-  const [entered, setEntered] = useState(false);
   const [floorId, setFloorId] = useState("main");
   const palette = useArtworkPalette(current?.cover_art);
 
@@ -47,9 +46,18 @@ function ClubPage() {
    */
   const startFloor = (f: Floor) => {
     setFloorId(f.id);
-    setEntered(true);
     playList(shuffle(tracksForFloor(f)), 0, f.curator ?? "Main floor");
   };
+
+  // The room is already playing when you walk in; if the browser blocks it,
+  // the transport surfaces a tap-to-play prompt.
+  const booted = useRef(false);
+  useEffect(() => {
+    if (booted.current) return;
+    booted.current = true;
+    playList(shuffle(tracksForFloor(floor)), 0, floor.curator ?? "Main floor");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const progress = duration > 0 ? Math.min(1, position / duration) : 0;
   const open = status === "playing";
@@ -58,9 +66,6 @@ function ClubPage() {
     <main className="club relative min-h-[calc(100vh-57px)] overflow-hidden">
       <ClubAtmosphere open={open} palette={palette} />
       <DiscoBall open={open} />
-
-      {!entered && <EnterCurtain onEnter={() => startFloor(floor)} />}
-
 
       <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[190px_1fr] md:gap-14 md:py-16">
         <FloorNav
@@ -100,7 +105,7 @@ function ClubPage() {
 
               <h1
                 className="mt-8 text-[clamp(2rem,5vw,3.25rem)] leading-[1.05]"
-                style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
+                style={{ fontFamily: "var(--font-display)", letterSpacing: "0.01em" }}
               >
                 {current.title}
               </h1>
@@ -111,8 +116,8 @@ function ClubPage() {
                 {[current.album, current.year].filter(Boolean).join(" · ")}
               </p>
               <p
-                className="mt-6 text-base italic"
-                style={{ fontFamily: '"Instrument Serif", Georgia, serif', color: "var(--club-dim)" }}
+                className="mt-6 text-base"
+                style={{ color: "var(--club-dim)" }}
               >
                 Discovered through{" "}
                 <span style={{ color: "var(--club-accent)", fontStyle: "normal" }}>{current.dj}</span>
@@ -223,7 +228,7 @@ function FloorNav({
                 </span>
                 <span
                   className="block whitespace-nowrap text-[17px] leading-tight"
-                  style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
+                  style={{ fontFamily: "var(--font-display)", letterSpacing: "0.01em" }}
                 >
                   {f.name}
                 </span>
@@ -236,30 +241,5 @@ function FloorNav({
         })}
       </ul>
     </nav>
-  );
-}
-
-/** Browsers won't let us play until someone touches the door. */
-function EnterCurtain({ onEnter }: { onEnter: () => void }) {
-  return (
-    <div
-      className="fixed inset-0 z-30 flex items-center justify-center px-6"
-      style={{ background: "color-mix(in oklab, var(--club-bg) 88%, transparent)" }}
-    >
-      <button onClick={onEnter} className="group text-center">
-        <span
-          className="block text-[clamp(2.5rem,8vw,4.5rem)] leading-none"
-          style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
-        >
-          Club
-        </span>
-        <span
-          className="mt-4 inline-block border-b pb-1 text-sm transition-opacity group-hover:opacity-70"
-          style={{ color: "var(--club-dim)", borderColor: "var(--club-line)" }}
-        >
-          Step inside — the music is already playing
-        </span>
-      </button>
-    </div>
   );
 }
