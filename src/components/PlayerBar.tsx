@@ -1,8 +1,18 @@
 import { usePlayer } from "@/lib/player";
 
+function fmt(ms: number) {
+  if (!ms || ms < 0) return "0:00";
+  const total = Math.floor(ms / 1000);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 export function PlayerBar() {
-  const { current, playing, toggle } = usePlayer();
+  const { current, playing, toggle, position, duration, seek } = usePlayer();
   if (!current) return null;
+
+  const pct = duration > 0 ? Math.min(100, (position / duration) * 100) : 0;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card/95 backdrop-blur">
