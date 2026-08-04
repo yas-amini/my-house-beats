@@ -310,35 +310,86 @@
 }
 .club-grain { animation: club-grain 1.6s steps(3) infinite; }
 
-/* star-filter flares around bright points */
-@keyframes club-flare {
-  0%, 100% { opacity: 0; transform: scale(0.7) rotate(0deg); }
-  45%      { opacity: 0.5; transform: scale(1) rotate(3deg); }
-  60%      { opacity: 0.32; transform: scale(1.05) rotate(-2deg); }
+/* ------------------------------------------------------------------
+   star-filter reflections
+   A single reflective facet catching the lens: dark -> pinpoint -> BLINK
+   -> bloom -> gone. Each instance is spawned with its own size, angle,
+   intensity and duration, so nothing ever twinkles in unison.
+------------------------------------------------------------------- */
+@keyframes club-star-blink {
+  0%   { opacity: 0; transform: rotate(var(--rot, 0deg)) scale(0.28); }
+  12%  { opacity: calc(var(--peak, 1) * 0.35); transform: rotate(var(--rot, 0deg)) scale(0.6); }
+  22%  { opacity: var(--peak, 1); transform: rotate(var(--rot, 0deg)) scale(1); }
+  34%  { opacity: calc(var(--peak, 1) * 0.55); transform: rotate(var(--rot, 0deg)) scale(1.06); }
+  46%  { opacity: calc(var(--peak, 1) * 0.82); transform: rotate(var(--rot, 0deg)) scale(1.02); }
+  100% { opacity: 0; transform: rotate(var(--rot, 0deg)) scale(0.72); }
 }
-.club-flare {
-  animation: club-flare 14s ease-in-out infinite;
+.club-star {
+  position: absolute;
   opacity: 0;
   mix-blend-mode: screen;
+  will-change: opacity, transform;
+  animation: club-star-blink var(--dur, 900ms) cubic-bezier(0.2, 0.9, 0.25, 1) both;
 }
-.club-flare-bar {
+/* thin optical rays — a hard 1px core with a faint wider falloff */
+.club-star-ray {
   position: absolute;
   left: 0;
   top: 50%;
   width: 100%;
-  height: 2px;
-  margin-top: -1px;
-  background: linear-gradient(90deg, transparent, var(--flare), transparent);
-  filter: blur(2px);
+  height: 1px;
+  margin-top: -0.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--tint, #fff) 60%, transparent) 32%,
+    #fff 50%,
+    color-mix(in srgb, var(--tint, #fff) 60%, transparent) 68%,
+    transparent 100%
+  );
+  filter: blur(0.4px);
 }
-.club-flare-bar--v {
+.club-star-ray--v {
   left: 50%;
   top: 0;
-  width: 2px;
+  width: 1px;
   height: 100%;
-  margin: 0 0 0 -1px;
-  background: linear-gradient(180deg, transparent, var(--flare), transparent);
+  margin: 0 0 0 -0.5px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--tint, #fff) 60%, transparent) 32%,
+    #fff 50%,
+    color-mix(in srgb, var(--tint, #fff) 60%, transparent) 68%,
+    transparent 100%
+  );
 }
+/* the soft halation the lens throws around a blown-out point */
+.club-star-bloom {
+  position: absolute;
+  inset: 34%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    #fff 0%,
+    color-mix(in srgb, var(--tint, #fff) 70%, transparent) 34%,
+    transparent 72%
+  );
+  filter: blur(3px);
+}
+/* the pinpoint itself, blown to pure white */
+.club-star-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.9);
+}
+
 
 /* disco ball light bloom */
 @keyframes club-ball-glow {
