@@ -33,31 +33,34 @@ function fmt(ms: number) {
 }
 
 function ClubPage() {
-  const { current, playing, toggle, next, position, duration, seek, playList } = usePlayer();
+  const { current, playing, status, blocked, toggle, next, position, duration, seek, playList, retry } =
+    usePlayer();
   const [entered, setEntered] = useState(false);
   const [floorId, setFloorId] = useState("main");
   const palette = useArtworkPalette(current?.cover_art);
-  const startedFor = useRef<string | null>(null);
 
   const floor = useMemo(() => floors.find((f) => f.id === floorId) ?? floors[0]!, [floorId]);
 
-  // Walking in — or walking onto another floor — drops a random record straight away.
-  useEffect(() => {
-    if (!entered) return;
-    if (startedFor.current === floor.id) return;
-    startedFor.current = floor.id;
-    playList(shuffle(tracksForFloor(floor)), 0, floor.curator ?? "Main floor");
-  }, [entered, floor, playList]);
+  /**
+   * Start playback synchronously inside the tap handler — mobile browsers only
+   * allow audio that begins as a direct result of a user gesture.
+   */
+  const startFloor = (f: Floor) => {
+    setFloorId(f.id);
+    setEntered(true);
+    playList(shuffle(tracksForFloor(f)), 0, f.curator ?? "Main floor");
+  };
 
   const progress = duration > 0 ? Math.min(1, position / duration) : 0;
-  const open = entered && playing;
+  const open = status === "playing";
 
   return (
     <main className="club relative min-h-[calc(100vh-57px)] overflow-hidden">
       <ClubAtmosphere open={open} palette={palette} />
       <DiscoBall open={open} />
 
-      {!entered && <EnterCurtain onEnter={() => setEntered(true)} />}
+      {!entered && <EnterCurtain onEnter={() => startFloor(floor)} />}
+
 
       <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[190px_1fr] md:gap-14 md:py-16">
         <FloorNav floors={floors} active={floor} onPick={setFloorId} />
