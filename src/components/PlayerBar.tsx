@@ -61,18 +61,18 @@ export function PlayerBar() {
         <div className="relative flex-1">
           <div className="h-1 w-full rounded-full bg-border" />
           <div
-            className="pointer-events-none absolute left-0 top-0 h-1 rounded-full bg-primary"
+            className="pointer-events-none absolute left-0 top-0 h-1 rounded-full bg-primary transition-[width] duration-200 ease-linear"
             style={{ width: `${pct}%` }}
           />
           <div
-            className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-primary shadow-sm"
+            className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-primary shadow-sm transition-[left] duration-200 ease-linear"
             style={{ left: `${pct}%` }}
           />
           <input
             type="range"
             min={0}
             max={duration || 0}
-            step={1000}
+            step={500}
             value={position}
             onChange={(e) => seek(Number(e.target.value))}
             aria-label="Seek"
