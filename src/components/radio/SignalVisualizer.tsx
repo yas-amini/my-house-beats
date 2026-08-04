@@ -78,9 +78,11 @@ export function SignalVisualizer({ playing, progress, seed, height = 132, onScru
           : 0.045 + Math.sin(i * 0.5 + t * 0.2) * 0.012;
 
         const ease = active ? 0.28 : 0.06;
-        levels[i] += (target - levels[i]) * ease;
+        const level = (levels[i] ?? 0.06) + (target - (levels[i] ?? 0.06)) * ease;
+        levels[i] = level;
 
-        const bh = Math.max(2, levels[i] * h);
+        const bh = Math.max(2, level * h);
+
         const x = i * barW;
         const y = (h - bh) / 2;
         ctx.fillStyle = p <= pos ? signal : dim;
