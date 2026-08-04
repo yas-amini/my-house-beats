@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RadioRouteImport } from './routes/radio'
 import { Route as CuratorSlugRouteImport } from './routes/curator.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RadioRoute = RadioRouteImport.update({
+  id: '/radio',
+  path: '/radio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CuratorSlugRoute = CuratorSlugRouteImport.update({
@@ -25,27 +31,31 @@ const CuratorSlugRoute = CuratorSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/radio': typeof RadioRoute
   '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/radio': typeof RadioRoute
   '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/radio': typeof RadioRoute
   '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/curator/$slug'
+  fullPaths: '/' | '/radio' | '/curator/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/curator/$slug'
-  id: '__root__' | '/' | '/curator/$slug'
+  to: '/' | '/radio' | '/curator/$slug'
+  id: '__root__' | '/' | '/radio' | '/curator/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RadioRoute: typeof RadioRoute
   CuratorSlugRoute: typeof CuratorSlugRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/radio': {
+      id: '/radio'
+      path: '/radio'
+      fullPath: '/radio'
+      preLoaderRoute: typeof RadioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/curator/$slug': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RadioRoute: RadioRoute,
   CuratorSlugRoute: CuratorSlugRoute,
 }
 export const routeTree = rootRouteImport
