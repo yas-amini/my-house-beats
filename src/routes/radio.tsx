@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "@/lib/player";
+import { OnAirLamp } from "@/components/radio/OnAirLamp";
+import { SignalVisualizer } from "@/components/radio/SignalVisualizer";
 import {
   shuffle,
   slugify,
@@ -16,23 +18,23 @@ import {
 export const Route = createFileRoute("/radio")({
   head: () => ({
     meta: [
-      { title: "Radio — My House Archive" },
+      { title: "Archive Radio — Live from My House" },
       {
         name: "description",
         content:
-          "A personal radio station built from the archive: shuffle everything, stay with one artist, one curator, one era or one album.",
+          "A live broadcast mode for a personal house archive: on-air signal, moving spectrum and stations built from the record data itself.",
       },
-      { property: "og:title", content: "Radio — My House Archive" },
+      { property: "og:title", content: "Archive Radio — Live from My House" },
       {
         property: "og:description",
-        content: "Stop browsing and listen: stations generated from the archive's own data.",
+        content: "Switch the station on and let the archive transmit: random, era, artist, curator or album.",
       },
     ],
   }),
   component: RadioPage,
 });
 
-type ModeId = "random" | "artist" | "curator" | "era" | "album" | "surprise";
+type ModeId = "random" | "era" | "artist" | "curator" | "album" | "surprise";
 
 function fmt(ms: number) {
   if (!ms || ms < 0) return "0:00";
@@ -40,80 +42,86 @@ function fmt(ms: number) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
 
-/** Deterministic pseudo-waveform so each record keeps its own shape. */
-function waveform(seed: number) {
-  const bars: number[] = [];
-  let x = seed * 9301 + 49297;
-  for (let i = 0; i < 64; i++) {
-    x = (x * 9301 + 49297) % 233280;
-    const base = 0.35 + 0.65 * Math.abs(Math.sin(i / 5 + seed));
-    bars.push(Math.max(0.12, Math.min(1, base * (0.6 + (x / 233280) * 0.8))));
-  }
-  return bars;
+/** Fake but stable dial frequency, derived from the record itself. */
+function frequencyOf(t: Track | null) {
+  if (!t) return "—.—";
+  const y = Number(t.year) || 2000;
+  const f = 87.5 + ((y * 37 + t.id * 13) % 205) / 10;
+  return f.toFixed(1);
 }
 
 function RadioPage() {
   const { current, playing, toggle, next, prev, position, duration, seek, queue, playList } =
     usePlayer();
   const [mode, setMode] = useState<ModeId>("random");
+  const [handoff, setHandoff] = useState(false);
+  const lastId = useRef<number | null>(null);
 
-  const seed = current?.id ?? 1;
-  const bars = useMemo(() => waveform(seed), [seed]);
-  const pct = duration > 0 ? Math.min(100, (position / duration) * 100) : 0;
+  // Station handoff: announce every time the transmission changes record.
+  useEffect(() => {
+    if (!current) return;
+    if (lastId.current === current.id) return;
+    const first = lastId.current === null;
+    lastId.current = current.id;
+    if (first) return;
+    setHandoff(true);
+    const t = window.setTimeout(() => setHandoff(false), 1900);
+    return () => window.clearTimeout(t);
+  }, [current]);
 
-  const modes: { id: ModeId; label: string; hint: string; build: () => Track[] }[] = [
-    {
-      id: "random",
-      label: "Random",
-      hint: "The whole archive, shuffled",
-      build: () => shuffle(tracks),
-    },
-    {
-      id: "artist",
-      label: "Same artist",
-      hint: current ? current.artist : "Pick a track first",
-      build: () =>
-        current ? [current, ...shuffle(tracksForArtist(current.artist, current.id))] : [],
-    },
-    {
-      id: "curator",
-      label: "Same curator",
-      hint: current ? `via ${current.dj}` : "Pick a track first",
-      build: () =>
-        current
-          ? [current, ...shuffle(tracksForCurator(current.dj as string).filter((t) => t.id !== current.id))]
-          : [],
-    },
-    {
-      id: "era",
-      label: "Same era",
-      hint: current ? (eraOf(Number(current.year))?.label ?? "Unknown era") : "Pick a track first",
-      build: () => (current ? [current, ...shuffle(tracksForEra(current.year, current.id))] : []),
-    },
-    {
-      id: "album",
-      label: "Same album",
-      hint: current?.album ?? "Pick a track first",
-      build: () => (current ? [current, ...tracksForAlbum(current.album, current.id)] : []),
-    },
-    {
-      id: "surprise",
-      label: "Surprise me",
-      hint: "One curator, one era, no warning",
-      build: () => {
-        const pool = shuffle(tracks);
-        const pick = pool[0];
-        if (!pick) return [];
-        const era = eraOf(Number(pick.year));
-        const set = tracks.filter(
-          (t) =>
-            t.dj === pick.dj &&
-            (!era || (Number(t.year) >= era.start && Number(t.year) <= era.end)),
-        );
-        return shuffle(set.length > 2 ? set : tracksForCurator(pick.dj as string));
+  const progress = duration > 0 ? Math.min(1, position / duration) : 0;
+  const era = current ? eraOf(Number(current.year)) : null;
+
+  const modes: { id: ModeId; label: string; hint: string; build: () => Track[] }[] = useMemo(
+    () => [
+      { id: "random", label: "Random", hint: "The whole archive, shuffled", build: () => shuffle(tracks) },
+      {
+        id: "era",
+        label: "Same era",
+        hint: current ? (eraOf(Number(current.year))?.label ?? "Unknown era") : "Start the station first",
+        build: () => (current ? [current, ...shuffle(tracksForEra(current.year, current.id))] : []),
       },
-    },
-  ];
+      {
+        id: "artist",
+        label: "Same artist",
+        hint: current ? current.artist : "Start the station first",
+        build: () => (current ? [current, ...shuffle(tracksForArtist(current.artist, current.id))] : []),
+      },
+      {
+        id: "curator",
+        label: "Same curator",
+        hint: current ? `via ${current.dj}` : "Start the station first",
+        build: () =>
+          current
+            ? [
+                current,
+                ...shuffle(tracksForCurator(current.dj as string).filter((t) => t.id !== current.id)),
+              ]
+            : [],
+      },
+      {
+        id: "album",
+        label: "Same album",
+        hint: current?.album ?? "Start the station first",
+        build: () => (current ? [current, ...tracksForAlbum(current.album, current.id)] : []),
+      },
+      {
+        id: "surprise",
+        label: "Surprise me",
+        hint: "One curator, one era, no warning",
+        build: () => {
+          const pick = shuffle(tracks)[0];
+          if (!pick) return [];
+          const e = eraOf(Number(pick.year));
+          const set = tracks.filter(
+            (t) => t.dj === pick.dj && (!e || (Number(t.year) >= e.start && Number(t.year) <= e.end)),
+          );
+          return shuffle(set.length > 2 ? set : tracksForCurator(pick.dj as string));
+        },
+      },
+    ],
+    [current],
+  );
 
   const start = (m: (typeof modes)[number]) => {
     const list = m.build().filter((t) => t.soundcloud_url);
@@ -122,192 +130,402 @@ function RadioPage() {
     playList(list, 0, m.label);
   };
 
-  return (
-    <main className="mx-auto max-w-6xl px-5 pb-40 pt-10">
-      <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-        Radio
-      </p>
-      <h1 className="mt-3 max-w-2xl font-display text-5xl leading-[0.92] tracking-wide sm:text-7xl">
-        Stop browsing.
-        <br />
-        Let the archive play.
-      </h1>
+  const tickerText = current
+    ? `${current.artist} — ${current.title} · ${current.year ?? "unknown year"} · discovered through ${current.dj} · `
+    : "Archive radio · 627 records · 1987–2026 · pick a station and the transmission begins · ";
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+  return (
+    <main className="studio relative min-h-screen overflow-hidden">
+      {/* ---------- atmosphere ---------- */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div
+          className={playing ? "studio-field-a absolute -left-1/4 top-[-20%] h-[80vh] w-[80vw]" : "absolute -left-1/4 top-[-20%] h-[80vh] w-[80vw]"}
+          style={{
+            background: "radial-gradient(circle, var(--studio-signal) 0%, transparent 62%)",
+            opacity: playing ? 0.26 : 0.1,
+            filter: "blur(80px)",
+            transition: "opacity 1.6s ease",
+          }}
+        />
+        <div
+          className={playing ? "studio-field-b absolute -right-1/4 bottom-[-25%] h-[80vh] w-[80vw]" : "absolute -right-1/4 bottom-[-25%] h-[80vh] w-[80vw]"}
+          style={{
+            background: "radial-gradient(circle, var(--studio-bg-2) 0%, transparent 60%)",
+            opacity: playing ? 0.85 : 0.45,
+            filter: "blur(90px)",
+            transition: "opacity 1.6s ease",
+          }}
+        />
+        {current?.cover_art && (
+          <img
+            key={`glow-${current.id}`}
+            src={current.cover_art}
+            alt=""
+            className={playing ? "studio-field-a absolute left-1/2 top-1/3 h-[70vh] w-[70vh] -translate-x-1/2 object-cover" : "absolute left-1/2 top-1/3 h-[70vh] w-[70vh] -translate-x-1/2 object-cover"}
+            style={{
+              filter: "blur(120px) saturate(1.6)",
+              opacity: playing ? 0.5 : 0.22,
+              transition: "opacity 2s ease",
+            }}
+          />
+        )}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E\")",
+            opacity: 0.16,
+            mixBlendMode: "overlay",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0,0,0,.22) 3px 4px)",
+            opacity: playing ? 0.35 : 0.15,
+            transition: "opacity 1.2s ease",
+          }}
+        />
+      </div>
+
+      {/* ---------- transmission masthead ---------- */}
+      <div className="relative z-10 border-b" style={{ borderColor: "var(--studio-line)" }}>
+        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8">
+          <OnAirLamp live={playing} />
+          <p
+            className="font-mono text-[10px] uppercase tracking-[0.42em]"
+            style={{ color: "var(--studio-dim)" }}
+          >
+            Live from the archive
+          </p>
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-4xl leading-none tracking-wide tabular-nums">
+              {frequencyOf(current)}
+            </span>
+            <span
+              className="font-mono text-[10px] uppercase tracking-[0.3em]"
+              style={{ color: "var(--studio-dim)" }}
+            >
+              FM · {mode}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ---------- ticker ---------- */}
+      <div
+        className="relative z-10 overflow-hidden border-b py-2"
+        style={{ borderColor: "var(--studio-line)" }}
+      >
+        <div className={`flex w-max ${playing ? "studio-ticker" : ""}`}>
+          {[0, 1].map((k) => (
+            <span
+              key={k}
+              className="whitespace-nowrap px-2 font-mono text-[11px] uppercase tracking-[0.28em]"
+              style={{ color: "var(--studio-dim)" }}
+            >
+              {tickerText.repeat(4)}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative z-10 mx-auto grid max-w-[1500px] gap-12 px-5 pb-44 pt-10 sm:px-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)] lg:gap-16">
+        {/* ================= CURRENT TRANSMISSION ================= */}
         <section>
           {current ? (
-            <>
-              <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-2xl border border-border">
-                {current.cover_art ? (
-                  <img
-                    key={current.id}
-                    src={current.cover_art}
-                    alt={`${current.artist} — ${current.title} cover art`}
-                    className="h-full w-full animate-fade-in object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-muted font-display text-6xl tracking-wide text-muted-foreground">
-                    {current.artist.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-              </div>
+            <div key={current.id} className="studio-tune-in">
+              <p
+                className="font-mono text-[10px] uppercase tracking-[0.5em]"
+                style={{ color: "var(--studio-signal)" }}
+              >
+                {handoff ? "Now broadcasting" : "Current transmission"}
+              </p>
 
-              <h2 className="mt-6 font-display text-4xl leading-none tracking-wide">
-                {current.artist}
-              </h2>
-              <p className="mt-1 text-lg text-muted-foreground">{current.title}</p>
-
-              <dl className="mt-5 grid max-w-md grid-cols-2 gap-y-3 font-mono text-[11px]">
-                <dt className="uppercase tracking-wider text-muted-foreground">Released</dt>
-                <dd className="tabular-nums">{current.year ?? "—"}</dd>
-                <dt className="uppercase tracking-wider text-muted-foreground">
-                  Discovered through
-                </dt>
-                <dd>
-                  <Link
-                    to="/curator/$slug"
-                    params={{ slug: slugify(current.dj as string) }}
-                    className="text-primary underline underline-offset-4"
-                  >
-                    {current.dj}
-                  </Link>
-                </dd>
-                {current.album && (
-                  <>
-                    <dt className="uppercase tracking-wider text-muted-foreground">Album</dt>
-                    <dd className="truncate">{current.album}</dd>
-                  </>
-                )}
-              </dl>
-
-              <div className="mt-6 max-w-md">
-                <button
-                  onClick={(e) => {
-                    const r = e.currentTarget.getBoundingClientRect();
-                    if (duration) seek(((e.clientX - r.left) / r.width) * duration);
-                  }}
-                  aria-label="Seek within the current track"
-                  className="flex h-16 w-full items-end gap-[2px]"
+              <div className="mt-6 grid gap-8 sm:grid-cols-[minmax(0,300px)_minmax(0,1fr)] sm:items-end">
+                {/* artwork: anchored, breathing, framed by a signal sweep */}
+                <div
+                  className="relative aspect-square w-full overflow-hidden border"
+                  style={{ borderColor: "var(--studio-line)", borderRadius: 4 }}
                 >
-                  {bars.map((b, i) => {
-                    const played = (i / bars.length) * 100 < pct;
-                    return (
+                  {current.cover_art ? (
+                    <img
+                      src={current.cover_art}
+                      alt={`${current.artist} — ${current.title} cover art`}
+                      className={`h-full w-full object-cover ${playing ? "studio-breathe" : ""}`}
+                    />
+                  ) : (
+                    <div
+                      className="flex h-full w-full items-center justify-center font-display text-7xl tracking-wide"
+                      style={{ background: "var(--studio-bg-2)", color: "var(--studio-dim)" }}
+                    >
+                      {current.artist.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  {playing && (
+                    <>
                       <span
-                        key={i}
+                        aria-hidden
+                        className="studio-sweep pointer-events-none absolute inset-x-0 h-1/3"
                         style={{
-                          height: `${b * 100}%`,
-                          transitionDelay: `${(i % 8) * 20}ms`,
+                          background:
+                            "linear-gradient(to bottom, transparent, oklch(1 0 0 / 18%), transparent)",
                         }}
-                        className={`flex-1 rounded-full transition-[background-color,opacity] duration-300 ${
-                          played ? "bg-primary" : "bg-foreground/15"
-                        } ${playing && played ? "opacity-100" : "opacity-80"}`}
                       />
-                    );
-                  })}
-                </button>
-                <div className="mt-2 flex justify-between font-mono text-[11px] tabular-nums text-muted-foreground">
-                  <span>{fmt(position)}</span>
-                  <span>{fmt(duration)}</span>
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0"
+                        style={{ boxShadow: "inset 0 0 90px oklch(0 0 0 / 45%)" }}
+                      />
+                    </>
+                  )}
+                  <span
+                    className="absolute left-0 top-0 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.28em]"
+                    style={{ background: "var(--studio-signal)", color: "var(--studio-ink)" }}
+                  >
+                    {playing ? "Transmitting" : "Standby"}
+                  </span>
+                </div>
+
+                {/* oversized editorial billing */}
+                <div className="min-w-0">
+                  <h1 className="font-display text-[clamp(3rem,8vw,7.5rem)] leading-[0.82] tracking-wide">
+                    {current.artist}
+                  </h1>
+                  <p className="mt-4 text-balance text-xl sm:text-2xl" style={{ color: "var(--studio-ink)" }}>
+                    {current.title}
+                  </p>
+                  <div
+                    className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.22em]"
+                    style={{ color: "var(--studio-dim)" }}
+                  >
+                    <span className="tabular-nums">{current.year ?? "—"}</span>
+                    {era && <span>{era.label}</span>}
+                    <span>
+                      via{" "}
+                      <Link
+                        to="/curator/$slug"
+                        params={{ slug: slugify(current.dj as string) }}
+                        className="underline underline-offset-4"
+                        style={{ color: "var(--studio-signal)" }}
+                      >
+                        {current.dj}
+                      </Link>
+                    </span>
+                    {current.album && <span className="truncate">{current.album}</span>}
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-5 flex items-center gap-3">
+              {/* ---------- signal ---------- */}
+              <div className="mt-10">
+                <div
+                  className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.34em]"
+                  style={{ color: "var(--studio-dim)" }}
+                >
+                  <span>Signal</span>
+                  <span className="tabular-nums">
+                    {fmt(position)} / {fmt(duration)}
+                  </span>
+                </div>
+                <div className="mt-2 border-y py-2" style={{ borderColor: "var(--studio-line)" }}>
+                  <SignalVisualizer
+                    playing={playing}
+                    progress={progress}
+                    seed={current.id % 97}
+                    onScrub={(r) => duration && seek(r * duration)}
+                  />
+                </div>
+              </div>
+
+              {/* ---------- transport ---------- */}
+              <div className="mt-7 flex flex-wrap items-center gap-4">
                 <button
                   onClick={prev}
-                  aria-label="Previous track"
-                  className="h-10 w-10 rounded-full border border-border font-mono text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                  aria-label="Previous transmission"
+                  className="h-12 w-12 border font-mono text-lg transition-colors"
+                  style={{ borderColor: "var(--studio-line)", borderRadius: 999 }}
                 >
                   ‹
                 </button>
                 <button
                   onClick={toggle}
-                  className="rounded-full bg-primary px-6 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-primary-foreground transition-transform hover:scale-[1.03]"
+                  className="group relative flex items-center gap-3 px-8 py-4 font-mono text-[11px] uppercase tracking-[0.34em]"
+                  style={{
+                    background: playing ? "transparent" : "var(--studio-signal)",
+                    border: "1px solid var(--studio-signal)",
+                    borderRadius: 999,
+                    color: "var(--studio-ink)",
+                  }}
                 >
-                  {playing ? "Pause" : "Play"}
+                  {playing ? "Cut transmission" : "Go on air"}
                 </button>
                 <button
                   onClick={next}
-                  aria-label="Next track"
-                  className="h-10 w-10 rounded-full border border-border font-mono text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                  aria-label="Next transmission"
+                  className="h-12 w-12 border font-mono text-lg transition-colors"
+                  style={{ borderColor: "var(--studio-line)", borderRadius: 999 }}
                 >
                   ›
                 </button>
+                <span
+                  className="font-mono text-[10px] uppercase tracking-[0.3em]"
+                  style={{ color: "var(--studio-dim)" }}
+                >
+                  {queue.length} in the schedule
+                </span>
               </div>
-            </>
+            </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-border p-10">
-              <p className="font-display text-3xl tracking-wide">Nothing on air yet</p>
-              <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                Pick a station on the right, or open the{" "}
-                <Link to="/" className="text-primary underline underline-offset-4">
+            <div className="py-6">
+              <p
+                className="font-mono text-[10px] uppercase tracking-[0.5em]"
+                style={{ color: "var(--studio-dim)" }}
+              >
+                Carrier only
+              </p>
+              <h1 className="mt-5 font-display text-[clamp(3rem,9vw,8rem)] leading-[0.82] tracking-wide">
+                The station
+                <br />
+                is silent.
+              </h1>
+              <p className="mt-5 max-w-md text-sm" style={{ color: "var(--studio-dim)" }}>
+                Pick a station on the right and the archive starts transmitting — or open the{" "}
+                <Link to="/" className="underline underline-offset-4" style={{ color: "var(--studio-signal)" }}>
                   archive
                 </Link>{" "}
-                and start from a record.
+                and put a record on yourself.
               </p>
+              <div className="mt-10 border-y py-2 opacity-60" style={{ borderColor: "var(--studio-line)" }}>
+                <SignalVisualizer playing={false} progress={0} seed={7} height={90} />
+              </div>
             </div>
           )}
         </section>
 
-        <section>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Stations
+        {/* ================= STATIONS + SCHEDULE ================= */}
+        <aside className="lg:border-l lg:pl-10" style={{ borderColor: "var(--studio-line)" }}>
+          <p
+            className="font-mono text-[10px] uppercase tracking-[0.42em]"
+            style={{ color: "var(--studio-dim)" }}
+          >
+            Tune the dial
           </p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {modes.map((m) => {
+          <ul className="mt-4">
+            {modes.map((m, i) => {
               const available = m.build().length > 0;
+              const active = mode === m.id;
               return (
-                <button
-                  key={m.id}
-                  onClick={() => start(m)}
-                  disabled={!available}
-                  className={`rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                    mode === m.id && available
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-foreground/40"
-                  }`}
-                >
-                  <p className="font-display text-2xl leading-none tracking-wide">{m.label}</p>
-                  <p className="mt-1.5 truncate font-mono text-[11px] text-muted-foreground">
-                    {m.hint}
-                  </p>
-                </button>
+                <li key={m.id}>
+                  <button
+                    onClick={() => start(m)}
+                    disabled={!available}
+                    className="group flex w-full items-baseline gap-4 border-b py-3 text-left transition-opacity disabled:cursor-not-allowed disabled:opacity-30"
+                    style={{ borderColor: "var(--studio-line)" }}
+                  >
+                    <span
+                      className="font-mono text-[10px] tabular-nums"
+                      style={{ color: active ? "var(--studio-signal)" : "var(--studio-dim)" }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className="block font-display text-3xl leading-none tracking-wide transition-colors"
+                        style={{ color: active ? "var(--studio-signal)" : "var(--studio-ink)" }}
+                      >
+                        {m.label}
+                      </span>
+                      <span
+                        className="mt-1 block truncate font-mono text-[10px] uppercase tracking-[0.2em]"
+                        style={{ color: "var(--studio-dim)" }}
+                      >
+                        {m.hint}
+                      </span>
+                    </span>
+                    {active && (
+                      <span
+                        className="font-mono text-[9px] uppercase tracking-[0.26em]"
+                        style={{ color: "var(--studio-signal)" }}
+                      >
+                        Tuned
+                      </span>
+                    )}
+                  </button>
+                </li>
               );
             })}
-          </div>
+          </ul>
 
-          <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            Up next <span className="tabular-nums">{queue.length}</span>
+          <p
+            className="mt-12 font-mono text-[10px] uppercase tracking-[0.42em]"
+            style={{ color: "var(--studio-dim)" }}
+          >
+            Up next
           </p>
-          <ol className="mt-3 divide-y divide-border border-y border-border">
-            {queue.slice(0, 12).map((t) => (
-              <li key={t.id} className="flex animate-fade-in items-center gap-3 py-2.5">
-                {t.cover_art ? (
-                  <img
-                    src={t.cover_art}
-                    alt=""
-                    loading="lazy"
-                    className="h-9 w-9 rounded border border-border object-cover"
-                  />
-                ) : (
-                  <div className="h-9 w-9 rounded border border-border bg-muted" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{t.artist}</p>
-                  <p className="truncate text-xs text-muted-foreground">{t.title}</p>
-                </div>
-                <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+          <ol className="mt-4">
+            {queue.slice(0, 10).map((t, i) => (
+              <li
+                key={`${t.id}-${i}`}
+                className="flex items-baseline gap-4 border-b py-2.5"
+                style={{ borderColor: "var(--studio-line)" }}
+              >
+                <span
+                  className="font-mono text-[10px] tabular-nums"
+                  style={{ color: "var(--studio-dim)" }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">{t.artist}</span>
+                  <span className="block truncate text-xs" style={{ color: "var(--studio-dim)" }}>
+                    {t.title}
+                  </span>
+                </span>
+                <span
+                  className="font-mono text-[10px] tabular-nums"
+                  style={{ color: "var(--studio-dim)" }}
+                >
                   {t.year ?? "—"}
                 </span>
               </li>
             ))}
             {queue.length === 0 && (
-              <li className="py-6 font-mono text-[11px] text-muted-foreground">
-                The queue is empty — start a station.
+              <li className="py-4 font-mono text-[10px] uppercase tracking-[0.24em]" style={{ color: "var(--studio-dim)" }}>
+                Schedule empty — tune the dial.
               </li>
             )}
           </ol>
-        </section>
+        </aside>
       </div>
+
+      {/* ---------- station handoff ---------- */}
+      {handoff && current && (
+        <div
+          aria-live="polite"
+          className="pointer-events-none fixed inset-0 z-30 flex items-center justify-center"
+        >
+          <div
+            className="absolute inset-0"
+            style={{ background: "var(--studio-bg)", opacity: 0.72, animation: "studio-handoff 1.9s ease-in-out forwards" }}
+          />
+          <div className="studio-handoff relative text-center">
+            <p
+              className="font-mono text-[11px] uppercase tracking-[0.5em]"
+              style={{ color: "var(--studio-signal)" }}
+            >
+              Now broadcasting
+            </p>
+            <p className="mt-4 font-display text-[clamp(2.5rem,7vw,6rem)] leading-none tracking-wide">
+              {current.artist}
+            </p>
+            <p className="mt-2 font-mono text-xs uppercase tracking-[0.3em]" style={{ color: "var(--studio-dim)" }}>
+              {current.title}
+            </p>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
