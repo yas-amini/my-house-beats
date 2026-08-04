@@ -26,15 +26,8 @@ export const Route = createFileRoute("/club")({
   component: ClubPage,
 });
 
-function fmt(ms: number) {
-  if (!ms || ms < 0) return "0:00";
-  const total = Math.floor(ms / 1000);
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-}
-
 function ClubPage() {
-  const { current, playing, status, blocked, toggle, next, position, duration, seek, playList, retry } =
-    usePlayer();
+  const { current, status, blocked, playList, retry } = usePlayer();
   const [floorId, setFloorId] = useState("main");
   const palette = useArtworkPalette(current?.cover_art);
 
@@ -59,7 +52,6 @@ function ClubPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const progress = duration > 0 ? Math.min(1, position / duration) : 0;
   const open = status === "playing";
 
   return (
@@ -67,7 +59,7 @@ function ClubPage() {
       <ClubAtmosphere open={open} palette={palette} />
       <DiscoBall open={open} />
 
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[190px_1fr] md:gap-14 md:py-16">
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 pb-40 pt-12 md:grid-cols-[190px_1fr] md:gap-14 md:pt-16">
         <FloorNav
           floors={floors}
           active={floor}
