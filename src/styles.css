@@ -248,3 +248,152 @@
     animation: none !important;
   }
 }
+
+/* ---------------------------------------------------------------
+ * CLUB MODE — a 1970s dance floor: warm haze, gelled lights, grain.
+ * Scoped to .club so the Archive keeps its restrained cream identity.
+ * --------------------------------------------------------------- */
+.club {
+  --club-bg: oklch(0.14 0.018 48);
+  --club-bg-2: oklch(0.22 0.035 42);
+  --club-ink: oklch(0.96 0.02 78);
+  --club-dim: oklch(0.68 0.03 66);
+  --club-line: oklch(1 0 0 / 13%);
+  --club-accent: oklch(0.78 0.14 68);
+  --club-light-a: #c8622a;
+  --club-light-b: #8d3b6e;
+  --club-light-c: #e0a24a;
+
+  background-color: var(--club-bg);
+  color: var(--club-ink);
+}
+
+.club ::selection {
+  background: var(--club-accent);
+  color: #160d08;
+}
+
+/* light sources drifting through the haze — extremely slow */
+@keyframes club-drift-a {
+  0%   { transform: translate3d(-4%, -3%, 0) scale(1.05); opacity: 0.42; }
+  50%  { transform: translate3d(7%, 5%, 0) scale(1.3); opacity: 0.58; }
+  100% { transform: translate3d(-4%, -3%, 0) scale(1.05); opacity: 0.42; }
+}
+@keyframes club-drift-b {
+  0%   { transform: translate3d(5%, 6%, 0) scale(1.22); opacity: 0.5; }
+  50%  { transform: translate3d(-7%, -5%, 0) scale(1.02); opacity: 0.34; }
+  100% { transform: translate3d(5%, 6%, 0) scale(1.22); opacity: 0.5; }
+}
+@keyframes club-drift-c {
+  0%   { transform: translate3d(0, 4%, 0) scale(1); opacity: 0.3; }
+  50%  { transform: translate3d(-6%, -6%, 0) scale(1.24); opacity: 0.46; }
+  100% { transform: translate3d(0, 4%, 0) scale(1); opacity: 0.3; }
+}
+.club-drift-a { animation: club-drift-a 54s ease-in-out infinite; }
+.club-drift-b { animation: club-drift-b 71s ease-in-out infinite; }
+.club-drift-c { animation: club-drift-c 63s ease-in-out infinite; }
+
+/* smoke haze breathing */
+@keyframes club-haze {
+  0%, 100% { opacity: 0.85; transform: translate3d(0, 0, 0) scale(1); }
+  50%      { opacity: 1; transform: translate3d(1.5%, -1%, 0) scale(1.06); }
+}
+.club-haze { animation: club-haze 38s ease-in-out infinite; }
+
+/* film grain shimmer */
+@keyframes club-grain {
+  0%   { transform: translate3d(0, 0, 0); }
+  25%  { transform: translate3d(-2%, 1%, 0); }
+  50%  { transform: translate3d(1%, -2%, 0); }
+  75%  { transform: translate3d(-1%, -1%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+.club-grain { animation: club-grain 1.6s steps(3) infinite; }
+
+/* star-filter flares around bright points */
+@keyframes club-flare {
+  0%, 100% { opacity: 0; transform: scale(0.7) rotate(0deg); }
+  45%      { opacity: 0.5; transform: scale(1) rotate(3deg); }
+  60%      { opacity: 0.32; transform: scale(1.05) rotate(-2deg); }
+}
+.club-flare {
+  animation: club-flare 14s ease-in-out infinite;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+.club-flare-bar {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  margin-top: -1px;
+  background: linear-gradient(90deg, transparent, var(--flare), transparent);
+  filter: blur(2px);
+}
+.club-flare-bar--v {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  margin: 0 0 0 -1px;
+  background: linear-gradient(180deg, transparent, var(--flare), transparent);
+}
+
+/* disco ball light bloom */
+@keyframes club-ball-glow {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.12); }
+}
+.club-ball-glow { animation: club-ball-glow 9s ease-in-out infinite; }
+
+/* club open lamp */
+@keyframes club-lamp {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(0.7); opacity: 0.45; }
+}
+@keyframes club-halo {
+  0%   { transform: scale(0.9); opacity: 0.5; }
+  70%  { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+.club-lamp { animation: club-lamp 1.4s ease-in-out infinite; }
+.club-halo { animation: club-halo 1.4s ease-out infinite; }
+
+/* artwork breathing + raking light */
+@keyframes club-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+.club-breathe { animation: club-breathe 16s ease-in-out infinite; }
+
+@keyframes club-rake {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  20%  { opacity: 0.8; }
+  80%  { opacity: 0.8; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+.club-rake { animation: club-rake 11s ease-in-out infinite; }
+
+/* entering the room / record change */
+@keyframes club-enter {
+  0%   { opacity: 0; transform: translateY(18px); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.club-enter { animation: club-enter 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes club-handoff {
+  0%   { opacity: 0; letter-spacing: 0.6em; }
+  18%  { opacity: 1; letter-spacing: 0.3em; }
+  70%  { opacity: 1; letter-spacing: 0.3em; }
+  100% { opacity: 0; letter-spacing: 0.14em; }
+}
+.club-handoff { animation: club-handoff 2.1s ease-in-out forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .club-drift-a, .club-drift-b, .club-drift-c, .club-haze, .club-grain,
+  .club-flare, .club-ball-glow, .club-lamp, .club-halo, .club-breathe,
+  .club-rake, .club-enter {
+    animation: none !important;
+  }
+}

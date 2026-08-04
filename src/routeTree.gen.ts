@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ClubRouteImport } from './routes/club'
 import { Route as RadioRouteImport } from './routes/radio'
 import { Route as CuratorSlugRouteImport } from './routes/curator.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClubRoute = ClubRouteImport.update({
+  id: '/club',
+  path: '/club',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RadioRoute = RadioRouteImport.update({
@@ -31,30 +37,34 @@ const CuratorSlugRoute = CuratorSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/club': typeof ClubRoute
   '/radio': typeof RadioRoute
   '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/club': typeof ClubRoute
   '/radio': typeof RadioRoute
   '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/club': typeof ClubRoute
   '/radio': typeof RadioRoute
   '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/radio' | '/curator/$slug'
+  fullPaths: '/' | '/club' | '/radio' | '/curator/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/radio' | '/curator/$slug'
-  id: '__root__' | '/' | '/radio' | '/curator/$slug'
+  to: '/' | '/club' | '/radio' | '/curator/$slug'
+  id: '__root__' | '/' | '/club' | '/radio' | '/curator/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ClubRoute: typeof ClubRoute
   RadioRoute: typeof RadioRoute
   CuratorSlugRoute: typeof CuratorSlugRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/club': {
+      id: '/club'
+      path: '/club'
+      fullPath: '/club'
+      preLoaderRoute: typeof ClubRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/radio': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ClubRoute: ClubRoute,
   RadioRoute: RadioRoute,
   CuratorSlugRoute: CuratorSlugRoute,
 }

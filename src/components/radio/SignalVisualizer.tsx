@@ -7,6 +7,8 @@ type Props = {
   /** stable seed so each record keeps its own signature */
   seed: number;
   height?: number;
+  /** ambient accent colour of the room (defaults to the CSS signal token) */
+  accent?: string;
   onScrub?: (ratio: number) => void;
 };
 
@@ -15,7 +17,7 @@ type Props = {
  * audio buffer) — a continuously animated level meter that moves while the
  * station transmits and settles to a flat carrier line when it stops.
  */
-export function SignalVisualizer({ playing, progress, seed, height = 132, onScrub }: Props) {
+export function SignalVisualizer({ playing, progress, seed, height = 132, accent, onScrub }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const levelsRef = useRef<number[]>([]);
   const playingRef = useRef(playing);
@@ -34,8 +36,10 @@ export function SignalVisualizer({ playing, progress, seed, height = 132, onScru
     if (levelsRef.current.length !== COUNT) levelsRef.current = new Array(COUNT).fill(0.06);
 
     const css = getComputedStyle(canvas);
-    const signal = css.getPropertyValue("--studio-signal").trim() || "#0066ff";
-    const dim = css.getPropertyValue("--studio-line").trim() || "rgba(255,255,255,.14)";
+    const signal =
+      accent || css.getPropertyValue("--club-accent").trim() || css.getPropertyValue("--studio-signal").trim() || "#e0a24a";
+    const dim =
+      css.getPropertyValue("--club-line").trim() || css.getPropertyValue("--studio-line").trim() || "rgba(255,255,255,.14)";
 
     let raf = 0;
     let t = 0;
@@ -107,7 +111,7 @@ export function SignalVisualizer({ playing, progress, seed, height = 132, onScru
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [height, seed]);
+  }, [height, seed, accent]);
 
   return (
     <canvas
