@@ -63,7 +63,12 @@ function ClubPage() {
 
 
       <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[190px_1fr] md:gap-14 md:py-16">
-        <FloorNav floors={floors} active={floor} onPick={setFloorId} />
+        <FloorNav
+          floors={floors}
+          active={floor}
+          onPick={(id) => startFloor(floors.find((f) => f.id === id) ?? floors[0]!)}
+        />
+
 
         <section className="min-w-0">
           <div className="flex items-center gap-4">
