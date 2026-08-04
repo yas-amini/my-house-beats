@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PlayerProvider } from "@/lib/player";
 import { PlayerBar } from "@/components/PlayerBar";
+import { SiteHeader } from "@/components/SiteHeader";
 
 
 function NotFoundComponent() {
