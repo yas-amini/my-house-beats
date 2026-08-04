@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePlayer } from "@/lib/player";
 import { ClubStatus } from "@/components/club/ClubStatus";
 import { ClubAtmosphere } from "@/components/club/ClubAtmosphere";
@@ -33,34 +33,42 @@ function fmt(ms: number) {
 }
 
 function ClubPage() {
-  const { current, playing, toggle, next, position, duration, seek, playList } = usePlayer();
+  const { current, playing, status, blocked, toggle, next, position, duration, seek, playList, retry } =
+    usePlayer();
   const [entered, setEntered] = useState(false);
   const [floorId, setFloorId] = useState("main");
   const palette = useArtworkPalette(current?.cover_art);
-  const startedFor = useRef<string | null>(null);
 
   const floor = useMemo(() => floors.find((f) => f.id === floorId) ?? floors[0]!, [floorId]);
 
-  // Walking in — or walking onto another floor — drops a random record straight away.
-  useEffect(() => {
-    if (!entered) return;
-    if (startedFor.current === floor.id) return;
-    startedFor.current = floor.id;
-    playList(shuffle(tracksForFloor(floor)), 0, floor.curator ?? "Main floor");
-  }, [entered, floor, playList]);
+  /**
+   * Start playback synchronously inside the tap handler — mobile browsers only
+   * allow audio that begins as a direct result of a user gesture.
+   */
+  const startFloor = (f: Floor) => {
+    setFloorId(f.id);
+    setEntered(true);
+    playList(shuffle(tracksForFloor(f)), 0, f.curator ?? "Main floor");
+  };
 
   const progress = duration > 0 ? Math.min(1, position / duration) : 0;
-  const open = entered && playing;
+  const open = status === "playing";
 
   return (
     <main className="club relative min-h-[calc(100vh-57px)] overflow-hidden">
       <ClubAtmosphere open={open} palette={palette} />
       <DiscoBall open={open} />
 
-      {!entered && <EnterCurtain onEnter={() => setEntered(true)} />}
+      {!entered && <EnterCurtain onEnter={() => startFloor(floor)} />}
+
 
       <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[190px_1fr] md:gap-14 md:py-16">
-        <FloorNav floors={floors} active={floor} onPick={setFloorId} />
+        <FloorNav
+          floors={floors}
+          active={floor}
+          onPick={(id) => startFloor(floors.find((f) => f.id === id) ?? floors[0]!)}
+        />
+
 
         <section className="min-w-0">
           <div className="flex items-center gap-4">
@@ -129,7 +137,7 @@ function ClubPage() {
 
                 <div className="mt-6 flex items-center gap-4">
                   <button
-                    onClick={toggle}
+                    onClick={blocked ? retry : toggle}
                     aria-label={playing ? "Pause" : "Play"}
                     className="flex h-14 w-14 items-center justify-center rounded-full transition-transform hover:scale-105"
                     style={{ background: "var(--club-accent)", color: "#160d08" }}
@@ -153,8 +161,21 @@ function ClubPage() {
                     Next record
                   </button>
                 </div>
+
+                {blocked && (
+                  <button
+                    onClick={retry}
+                    className="mt-5 w-full border px-4 py-3 text-left text-sm"
+                    style={{ borderColor: "var(--club-line)", borderRadius: 6, color: "var(--club-ink)" }}
+                  >
+                    {status === "error"
+                      ? "This record wouldn't load. Tap to try again, or skip to the next one."
+                      : "Your browser is holding the sound back. Tap here to play."}
+                  </button>
+                )}
               </div>
             </article>
+
           ) : (
             <p className="mt-16 text-lg" style={{ color: "var(--club-dim)" }}>
               The record is about to drop.
@@ -180,7 +201,7 @@ function FloorNav({
   onPick: (id: string) => void;
 }) {
   return (
-    <nav className="md:sticky md:top-24 md:self-start">
+    <nav className="min-w-0 md:sticky md:top-24 md:self-start">
       <p className="mb-4 font-mono text-[11px] tracking-widest" style={{ color: "var(--club-dim)" }}>
         Dance floors
       </p>
