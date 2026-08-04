@@ -12,8 +12,11 @@ import type { Track } from "@/lib/tracks";
 type PlayerState = {
   current: Track | null;
   playing: boolean;
+  position: number;
+  duration: number;
   select: (track: Track) => void;
   toggle: () => void;
+  seek: (ms: number) => void;
 };
 
 const PlayerContext = createContext<PlayerState | null>(null);
