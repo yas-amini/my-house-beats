@@ -29,7 +29,7 @@ export function StarFilter({ open, palette }: { open: boolean; palette: Palette 
   const angleRef = useRef(Math.random() * Math.PI * 2);
 
   useEffect(() => {
-    if (false) {
+    if (!open) {
       setStars([]);
       return;
     }
