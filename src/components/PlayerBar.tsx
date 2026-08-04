@@ -57,7 +57,6 @@ export function PlayerBar() {
                 ? { background: "var(--club-accent)", color: "var(--club-bg)" }
                 : undefined
             }
-            {...(isClub ? {} : { "data-default": true })}
           >
             {playing ? (
               <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
