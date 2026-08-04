@@ -31,7 +31,7 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
               <button
                 onClick={() => playList(list, i, queueLabel)}
                 className={`group grid w-full grid-cols-[2.5rem_2.5rem_1fr_auto] items-center gap-3 px-1 py-2.5 text-left transition-colors sm:grid-cols-[3rem_2.5rem_1fr_10rem_4rem] ${
-                  active ? "bg-primary/[0.04]" : "hover:bg-foreground/[0.03]"
+                  active ? "bg-primary/5" : "hover:bg-foreground/[0.03]"
                 }`}
               >
                 <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
