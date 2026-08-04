@@ -4,6 +4,7 @@ import { usePlayer } from "@/lib/player";
 import { ClubStatus } from "@/components/club/ClubStatus";
 import { ClubAtmosphere } from "@/components/club/ClubAtmosphere";
 import { DiscoBall, DiscoBallCredit } from "@/components/club/DiscoBall";
+import { StarFilter } from "@/components/club/StarFilter";
 import { useArtworkPalette } from "@/lib/palette";
 import { floors, shuffle, tracksForFloor, type Floor } from "@/lib/tracks";
 
@@ -58,6 +59,7 @@ function ClubPage() {
     <main className="club relative min-h-[calc(100vh-57px)] overflow-hidden">
       <ClubAtmosphere open={open} palette={palette} />
       <DiscoBall open={open} />
+      <StarFilter open={open} palette={palette} />
 
       <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 pb-40 pt-12 md:grid-cols-[190px_1fr] md:gap-14 md:pt-16">
         <FloorNav
