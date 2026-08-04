@@ -4,7 +4,6 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -124,17 +123,13 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // Club Mode is a full environment with its own transport controls.
-  const inClub = pathname.startsWith("/club");
-
   return (
     <QueryClientProvider client={queryClient}>
       <PlayerProvider>
         <SiteHeader />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
-        {!inClub && <PlayerBar />}
+        <PlayerBar />
       </PlayerProvider>
     </QueryClientProvider>
   );

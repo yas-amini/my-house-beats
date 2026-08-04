@@ -26,15 +26,8 @@ export const Route = createFileRoute("/club")({
   component: ClubPage,
 });
 
-function fmt(ms: number) {
-  if (!ms || ms < 0) return "0:00";
-  const total = Math.floor(ms / 1000);
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-}
-
 function ClubPage() {
-  const { current, playing, status, blocked, toggle, next, position, duration, seek, playList, retry } =
-    usePlayer();
+  const { current, status, blocked, playList, retry } = usePlayer();
   const [floorId, setFloorId] = useState("main");
   const palette = useArtworkPalette(current?.cover_art);
 
@@ -59,7 +52,6 @@ function ClubPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const progress = duration > 0 ? Math.min(1, position / duration) : 0;
   const open = status === "playing";
 
   return (
@@ -67,7 +59,7 @@ function ClubPage() {
       <ClubAtmosphere open={open} palette={palette} />
       <DiscoBall open={open} />
 
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[190px_1fr] md:gap-14 md:py-16">
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 pb-40 pt-12 md:grid-cols-[190px_1fr] md:gap-14 md:pt-16">
         <FloorNav
           floors={floors}
           active={floor}
@@ -123,62 +115,18 @@ function ClubPage() {
                 <span style={{ color: "var(--club-accent)", fontStyle: "normal" }}>{current.dj}</span>
               </p>
 
-              {/* transport */}
-              <div className="mt-9 max-w-md">
-                <input
-                  type="range"
-                  min={0}
-                  max={duration || 1}
-                  value={position}
-                  onChange={(e) => seek(Number(e.target.value))}
-                  aria-label="Seek"
-                  className="club-seek w-full"
-                  style={{ ["--p" as string]: `${progress * 100}%` }}
-                />
-                <div className="mt-2 flex justify-between font-mono text-[11px]" style={{ color: "var(--club-dim)" }}>
-                  <span>{fmt(position)}</span>
-                  <span>{fmt(duration)}</span>
-                </div>
-
-                <div className="mt-6 flex items-center gap-4">
-                  <button
-                    onClick={blocked ? retry : toggle}
-                    aria-label={playing ? "Pause" : "Play"}
-                    className="flex h-14 w-14 items-center justify-center rounded-full transition-transform hover:scale-105"
-                    style={{ background: "var(--club-accent)", color: "#160d08" }}
-                  >
-                    {playing ? (
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-                        <rect x="3" y="2" width="4" height="14" rx="1" />
-                        <rect x="11" y="2" width="4" height="14" rx="1" />
-                      </svg>
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-                        <path d="M4 2.5v13l11-6.5z" />
-                      </svg>
-                    )}
-                  </button>
-                  <button
-                    onClick={next}
-                    className="text-sm underline underline-offset-4 transition-colors hover:opacity-80"
-                    style={{ color: "var(--club-dim)" }}
-                  >
-                    Next record
-                  </button>
-                </div>
-
-                {blocked && (
-                  <button
-                    onClick={retry}
-                    className="mt-5 w-full border px-4 py-3 text-left text-sm"
-                    style={{ borderColor: "var(--club-line)", borderRadius: 6, color: "var(--club-ink)" }}
-                  >
-                    {status === "error"
-                      ? "This record wouldn't load. Tap to try again, or skip to the next one."
-                      : "Your browser is holding the sound back. Tap here to play."}
-                  </button>
-                )}
-              </div>
+              {/* transport lives in the global PlayerBar */}
+              {blocked && (
+                <button
+                  onClick={retry}
+                  className="mt-9 w-full max-w-md border px-4 py-3 text-left text-sm"
+                  style={{ borderColor: "var(--club-line)", borderRadius: 6, color: "var(--club-ink)" }}
+                >
+                  {status === "error"
+                    ? "This record wouldn't load. Tap to try again, or skip to the next one."
+                    : "Your browser is holding the sound back. Tap here to play."}
+                </button>
+              )}
             </article>
 
           ) : (
