@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { usePlayer } from "@/lib/player";
 import { slugify } from "@/lib/tracks";
 
@@ -13,25 +13,51 @@ function fmt(ms: number) {
 export function PlayerBar() {
   const { current, playing, toggle, position, duration, seek, next, prev, queue, queueLabel } =
     usePlayer();
+  const isClub = useRouterState({
+    select: (s) => s.location.pathname.startsWith("/club"),
+  });
   if (!current) return null;
 
   const pct = duration > 0 ? Math.min(100, (position / duration) * 100) : 0;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card/95 backdrop-blur">
+    <div
+      className={`fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur ${
+        isClub ? "club border-transparent" : "border-border bg-card/95"
+      }`}
+      style={
+        isClub
+          ? {
+              borderTopColor: "var(--club-line)",
+              background: "color-mix(in oklab, var(--club-bg) 88%, transparent)",
+              color: "var(--club-ink)",
+            }
+          : undefined
+      }
+    >
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 pt-3">
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={prev}
             aria-label="Previous track"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border font-mono text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-colors ${
+              isClub
+                ? "border-[color:var(--club-line)] text-[color:var(--club-dim)] hover:text-[color:var(--club-accent)]"
+                : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
           >
             ‹
           </button>
           <button
             onClick={toggle}
             aria-label={playing ? "Pause" : "Play"}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105"
+            className="flex h-11 w-11 items-center justify-center rounded-full transition-transform hover:scale-105"
+            style={
+              isClub
+                ? { background: "var(--club-accent)", color: "var(--club-bg)" }
+                : undefined
+            }
+            {...(isClub ? {} : { "data-default": true })}
           >
             {playing ? (
               <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
@@ -47,7 +73,11 @@ export function PlayerBar() {
           <button
             onClick={next}
             aria-label="Next track"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border font-mono text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-colors ${
+              isClub
+                ? "border-[color:var(--club-line)] text-[color:var(--club-dim)] hover:text-[color:var(--club-accent)]"
+                : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
           >
             ›
           </button>
@@ -58,14 +88,16 @@ export function PlayerBar() {
             key={current.id}
             src={current.cover_art}
             alt={`${current.artist} — ${current.title} cover art`}
-            className="h-11 w-11 shrink-0 animate-scale-in rounded-md border border-border object-cover"
+            className="h-11 w-11 shrink-0 animate-scale-in rounded-md border object-cover"
+            style={{ borderColor: isClub ? "var(--club-line)" : "hsl(var(--border))" }}
           />
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-xl leading-tight tracking-wide">
             {current.artist} — {current.title}
           </p>
-          <p className="truncate font-mono text-[11px] text-muted-foreground">
+          <p className="truncate font-mono text-[11px]"
+            style={{ color: isClub ? "var(--club-dim)" : undefined }}>
             Released {current.year ?? "—"} · discovered through{" "}
             <Link
               to="/curator/$slug"
