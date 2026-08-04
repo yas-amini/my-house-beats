@@ -231,7 +231,7 @@ function RadioPage() {
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto grid max-w-[1500px] gap-12 px-5 pb-44 pt-10 sm:px-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)] lg:gap-16">
+      <div className="relative z-10 mx-auto grid max-w-[1500px] gap-12 px-5 pb-24 pt-10 sm:px-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)] lg:gap-16">
         {/* ================= CURRENT TRANSMISSION ================= */}
         <section>
           {current ? (
