@@ -36,6 +36,8 @@ declare global {
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [current, setCurrent] = useState<Track | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const widgetRef = useRef<any>(null);
 
@@ -56,15 +58,27 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     iframeRef.current.src = url;
     setPlaying(true);
     widgetRef.current = null;
+    setPosition(0);
+    setDuration(0);
 
     let cancelled = false;
     const attach = () => {
       if (cancelled || !window.SC || !iframeRef.current) return;
       const w = window.SC.Widget(iframeRef.current);
       widgetRef.current = w;
-      w.bind("play", () => setPlaying(true));
+      w.bind("play", () => {
+        setPlaying(true);
+        w.getDuration((d: number) => setDuration(d));
+      });
       w.bind("pause", () => setPlaying(false));
-      w.bind("finish", () => setPlaying(false));
+      w.bind("finish", () => {
+        setPlaying(false);
+        setPosition(0);
+      });
+      w.bind("playProgress", (e: { currentPosition: number }) =>
+        setPosition(e.currentPosition),
+      );
+      w.bind("ready", () => w.getDuration((d: number) => setDuration(d)));
     };
     const timer = window.setInterval(() => {
       if (window.SC) {
@@ -88,8 +102,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setPlaying((p) => !p);
   }, [playing]);
 
+  const seek = useCallback((ms: number) => {
+    const w = widgetRef.current;
+    setPosition(ms);
+    if (w) w.seekTo(ms);
+  }, []);
+
   return (
-    <PlayerContext.Provider value={{ current, playing, select, toggle }}>
+    <PlayerContext.Provider
+      value={{ current, playing, position, duration, select, toggle, seek }}
+    >
       {children}
       <iframe
         ref={iframeRef}
