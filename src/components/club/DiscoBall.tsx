@@ -1,5 +1,5 @@
 const SKETCHFAB_SRC =
-  "https://sketchfab.com/models/b949297d4ecb48a89ea3544621c999c9/embed?autospin=1&autostart=1&camera=0&preload=1&transparent=1&ui_hint=0";
+  "https://sketchfab.com/models/b949297d4ecb48a89ea3544621c999c9/embed?autospin=1&autostart=1&camera=0&preload=1&transparent=1&ui_hint=0&ui_controls=0&ui_infos=0&ui_watermark=0";
 
 type Props = { open: boolean };
 
@@ -55,39 +55,3 @@ export function DiscoBall({ open }: Props) {
   );
 }
 
-/** Required Sketchfab attribution for the embedded model. */
-export function DiscoBallCredit() {
-  return (
-    <p
-      className="font-mono text-[9px] uppercase tracking-[0.24em]"
-      style={{ color: "var(--club-dim)" }}
-    >
-      <a
-        href="https://sketchfab.com/3d-models/disco-ball-animated-b949297d4ecb48a89ea3544621c999c9?utm_medium=embed&utm_campaign=share-popup&utm_content=b949297d4ecb48a89ea3544621c999c9"
-        target="_blank"
-        rel="nofollow noreferrer noopener"
-        className="underline underline-offset-4"
-      >
-        Disco ball animated
-      </a>{" "}
-      by{" "}
-      <a
-        href="https://sketchfab.com/krolzuzannapl?utm_medium=embed&utm_campaign=share-popup&utm_content=b949297d4ecb48a89ea3544621c999c9"
-        target="_blank"
-        rel="nofollow noreferrer noopener"
-        className="underline underline-offset-4"
-      >
-        SusanKing
-      </a>{" "}
-      on{" "}
-      <a
-        href="https://sketchfab.com?utm_medium=embed&utm_campaign=share-popup&utm_content=b949297d4ecb48a89ea3544621c999c9"
-        target="_blank"
-        rel="nofollow noreferrer noopener"
-        className="underline underline-offset-4"
-      >
-        Sketchfab
-      </a>
-    </p>
-  );
-}

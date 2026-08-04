@@ -137,9 +137,6 @@ function ClubPage() {
             </p>
           )}
 
-          <div className="mt-16">
-            <DiscoBallCredit />
-          </div>
         </section>
       </div>
     </main>
