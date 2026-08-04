@@ -103,6 +103,7 @@ export function PlayerBar() {
               to="/curator/$slug"
               params={{ slug: slugify(current.dj as string) }}
               className="underline decoration-border underline-offset-2 hover:text-primary"
+              style={isClub ? { color: "var(--club-accent)" } : undefined}
             >
               {current.dj}
             </Link>
@@ -112,6 +113,7 @@ export function PlayerBar() {
           <Link
             to="/club"
             className="hidden shrink-0 font-mono text-[11px] text-muted-foreground hover:text-primary sm:block"
+            style={isClub ? { color: "var(--club-dim)" } : undefined}
           >
             {queueLabel ? `${queueLabel} · ` : ""}
             {queue.length} up next
@@ -119,18 +121,40 @@ export function PlayerBar() {
         )}
       </div>
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3">
-        <span className="w-10 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
+        <span
+          className="w-10 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground"
+          style={isClub ? { color: "var(--club-dim)" } : undefined}
+        >
           {fmt(position)}
         </span>
         <div className="relative flex-1">
-          <div className="h-1 w-full rounded-full bg-border" />
+          <div
+            className="h-1 w-full rounded-full bg-border"
+            style={
+              isClub
+                ? { background: "color-mix(in oklab, var(--club-ink) 20%, transparent)" }
+                : undefined
+            }
+          />
           <div
             className="pointer-events-none absolute left-0 top-0 h-1 rounded-full bg-primary transition-[width] duration-200 ease-linear"
-            style={{ width: `${pct}%` }}
+            style={{
+              width: `${pct}%`,
+              ...(isClub ? { background: "var(--club-accent)" } : {}),
+            }}
           />
           <div
             className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-primary shadow-sm transition-[left] duration-200 ease-linear"
-            style={{ left: `${pct}%` }}
+            style={{
+              left: `${pct}%`,
+              ...(isClub
+                ? {
+                    background: "var(--club-accent)",
+                    borderColor: "var(--club-line)",
+                    boxShadow: "0 0 14px var(--club-accent)",
+                  }
+                : {}),
+            }}
           />
           <input
             type="range"
@@ -144,9 +168,13 @@ export function PlayerBar() {
             className="absolute inset-x-0 top-1/2 h-4 w-full -translate-y-1/2 cursor-pointer opacity-0"
           />
         </div>
-        <span className="w-10 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+        <span
+          className="w-10 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground"
+          style={isClub ? { color: "var(--club-dim)" } : undefined}
+        >
           {fmt(duration)}
         </span>
+
       </div>
     </div>
   );
