@@ -8,6 +8,7 @@ export type Track = {
   dj: string | null;
   album: string | null;
   soundcloud_url: string | null;
+  cover_art?: string | null;
 };
 
 export const UNCREDITED = "Uncredited";

@@ -50,13 +50,25 @@ function CuratorPage() {
             <button
               key={t.id}
               onClick={() => select(t)}
-              className={`rounded-xl border border-l-4 bg-card p-4 text-left transition-colors hover:border-l-primary ${
+              className={`flex gap-4 rounded-xl border border-l-4 bg-card p-4 text-left transition-colors hover:border-l-primary ${
                 active ? "border-border border-l-primary" : "border-border border-l-border"
               }`}
             >
-              <p className="truncate font-semibold">{t.artist}</p>
-              <p className="mt-1 truncate text-sm text-muted-foreground">{t.title}</p>
-              <p className="mt-3 font-mono text-xs text-muted-foreground">{t.year ?? "—"}</p>
+              {t.cover_art ? (
+                <img
+                  src={t.cover_art}
+                  alt={`${t.artist} — ${t.title} cover art`}
+                  loading="lazy"
+                  className="h-16 w-16 shrink-0 rounded-md border border-border object-cover"
+                />
+              ) : (
+                <div className="h-16 w-16 shrink-0 rounded-md border border-border bg-muted" />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{t.artist}</p>
+                <p className="mt-1 truncate text-sm text-muted-foreground">{t.title}</p>
+                <p className="mt-2 font-mono text-xs text-muted-foreground">{t.year ?? "—"}</p>
+              </div>
             </button>
           );
         })}
