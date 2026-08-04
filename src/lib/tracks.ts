@@ -98,10 +98,12 @@ export function tracksForEra(year: string | null, exceptId?: number) {
 }
 
 export function shuffle<T>(list: T[]): T[] {
-  const out = [...list];
+  const out = list.slice();
   for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
+    const a = out[i] as T;
+    out[i] = out[j] as T;
+    out[j] = a;
   }
   return out;
 }
