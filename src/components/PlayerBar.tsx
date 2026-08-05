@@ -161,7 +161,7 @@ export function PlayerBar() {
               </svg>
             )}
           </button>
-          <div className="relative hidden w-20 items-center sm:flex">
+          <div className="relative flex w-16 items-center sm:w-20">
             <div
               className="h-1 w-full rounded-full bg-border"
               style={
