@@ -1,5 +1,5 @@
 const SKETCHFAB_SRC =
-  "https://sketchfab.com/models/b949297d4ecb48a89ea3544621c999c9/embed?autospin=0.2&autostart=1&camera=0&preload=1&transparent=1&ui_hint=0&ui_controls=0&ui_help=0&ui_infos=0&ui_watermark=0";
+  "https://sketchfab.com/models/b949297d4ecb48a89ea3544621c999c9/embed?autospin=0.2&autostart=1&camera=0&preload=1&transparent=1&ui_hint=0&ui_controls=0&ui_help=0&ui_infos=0&ui_watermark=0&ui_settings=0&ui_inspector=0&ui_annotations=0&ui_stop=0&ui_vr=0&ui_ar=0&dnt=1";
 
 type Props = { open: boolean };
 
@@ -47,8 +47,8 @@ export function DiscoBall({ open }: Props) {
           background: "transparent",
           // screen blending drops the viewer's black plate so the ball hangs in the room
           mixBlendMode: "screen",
-          maskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
-          WebkitMaskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
+          maskImage: "radial-gradient(circle at 50% 46%, #000 34%, transparent 48%)",
+          WebkitMaskImage: "radial-gradient(circle at 50% 46%, #000 34%, transparent 48%)",
         }}
       />
     </div>
