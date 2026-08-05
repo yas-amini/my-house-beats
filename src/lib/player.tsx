@@ -350,6 +350,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         blocked: status === "blocked" || status === "error",
         position,
         duration,
+        volume,
+        muted,
         queue: queue.slice(index + 1),
         queueLabel,
         select,
@@ -359,6 +361,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         prev,
         toggle,
         seek,
+        setVolume,
+        toggleMute,
       }}
     >
       {children}
