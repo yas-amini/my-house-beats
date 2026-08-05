@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "@/lib/player";
 import { ClubStatus } from "@/components/club/ClubStatus";
 import { ClubAtmosphere } from "@/components/club/ClubAtmosphere";
-import { DiscoBall, DiscoBallCredit } from "@/components/club/DiscoBall";
+import { DiscoBall } from "@/components/club/DiscoBall";
 import { StarFilter } from "@/components/club/StarFilter";
 import { useArtworkPalette } from "@/lib/palette";
 import { floors, shuffle, tracksForFloor, type Floor } from "@/lib/tracks";
