@@ -133,6 +133,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const applyVolume = useCallback((value: number) => {
+    const w = widgetRef.current;
+    if (!w || typeof w.setVolume !== "function") return;
+    try {
+      w.setVolume(Math.max(0, Math.min(100, value)));
+    } catch {
+      /* widget may not be ready yet */
+    }
+  }, []);
+
   const bind = useCallback((w: any, token: number) => {
     w.unbind("play");
     w.unbind("pause");
