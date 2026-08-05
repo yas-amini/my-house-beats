@@ -72,6 +72,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AudioStatus>("idle");
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolumeState] = useState(100);
+  const [muted, setMuted] = useState(false);
+  const preMuteVolumeRef = useRef(100);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const widgetRef = useRef<any>(null);
   const seekingRef = useRef(false);
