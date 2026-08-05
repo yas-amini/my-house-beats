@@ -311,6 +311,36 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }, 400);
   }, []);
 
+  const setVolume = useCallback(
+    (value: number) => {
+      const clamped = Math.max(0, Math.min(100, value));
+      setVolumeState(clamped);
+      if (clamped > 0 && muted) setMuted(false);
+      applyVolume(muted && clamped > 0 ? 0 : clamped);
+    },
+    [muted, applyVolume],
+  );
+
+  const toggleMute = useCallback(() => {
+    setMuted((wasMuted) => {
+      const next = !wasMuted;
+      if (next) {
+        preMuteVolumeRef.current = volume || 100;
+        applyVolume(0);
+      } else {
+        const restored = preMuteVolumeRef.current || volume || 100;
+        setVolumeState(restored);
+        applyVolume(restored);
+      }
+      return next;
+    });
+  }, [volume, applyVolume]);
+
+  // Keep the widget in sync whenever the underlying volume/mute state changes.
+  useEffect(() => {
+    applyVolume(muted ? 0 : volume);
+  }, [muted, volume, applyVolume]);
+
   return (
     <PlayerContext.Provider
       value={{
