@@ -28,6 +28,8 @@ type PlayerState = {
   blocked: boolean;
   position: number;
   duration: number;
+  volume: number;
+  muted: boolean;
   queue: Track[];
   queueLabel: string | null;
   select: (track: Track) => void;
@@ -38,6 +40,8 @@ type PlayerState = {
   prev: () => void;
   toggle: () => void;
   seek: (ms: number) => void;
+  setVolume: (value: number) => void;
+  toggleMute: () => void;
 };
 
 const PlayerContext = createContext<PlayerState | null>(null);
