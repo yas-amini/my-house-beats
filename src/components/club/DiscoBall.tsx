@@ -1,14 +1,90 @@
-const SKETCHFAB_SRC =
-  "https://sketchfab.com/models/8702a32e7a714eec8bde7e21c6de7bdb/embed?autospin=0.2&autostart=1&camera=0&preload=1&transparent=1&ui_hint=0&ui_controls=0&ui_help=0&ui_infos=0&ui_watermark=0&ui_settings=0&ui_inspector=0&ui_annotations=0&ui_stop=0&ui_vr=0&ui_ar=0&dnt=1";
+import { useEffect, useRef } from "react";
+
+declare global {
+  interface Window {
+    Sketchfab?: any;
+  }
+}
+
+const MODEL_ID = "b949297d4ecb48a89ea3544621c999c9";
 
 type Props = { open: boolean };
 
 /**
  * The disco ball hangs in the room: oversized, sitting behind everything and
- * casting light through the haze. On mobile it stays fully on-screen, tucked
- * into the top-right corner.
+ * casting light through the haze. Uses the Sketchfab Viewer API to control rotation
+ * and interface visibility dynamically.
  */
 export function DiscoBall({ open }: Props) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const apiRef = useRef<any>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const initViewer = () => {
+      if (cancelled || !iframeRef.current || !window.Sketchfab) return;
+      const client = new window.Sketchfab("1.12.1", iframeRef.current);
+      client.init(MODEL_ID, {
+        autostart: 1,
+        transparent: 1,
+        ui_hint: 0,
+        ui_controls: 0,
+        ui_help: 0,
+        ui_infos: 0,
+        ui_watermark: 0,
+        ui_settings: 0,
+        ui_inspector: 0,
+        ui_annotations: 0,
+        ui_stop: 0,
+        ui_vr: 0,
+        ui_ar: 0,
+        dnt: 1,
+        success: (api: any) => {
+          if (cancelled) return;
+          apiRef.current = api;
+          api.start();
+          api.addEventListener("viewerready", () => {
+            if (cancelled) return;
+            api.startRotation(0.2);
+          });
+        },
+        error: () => console.error("Sketchfab API initialization failed."),
+      });
+    };
+
+    if (window.Sketchfab) {
+      initViewer();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js";
+      script.async = true;
+      script.onload = () => initViewer();
+      document.body.appendChild(script);
+    }
+
+    return () => {
+      cancelled = true;
+      if (apiRef.current) {
+        try {
+          apiRef.current.stop();
+        } catch (_) {}
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api) return;
+    try {
+      if (open) {
+        api.startRotation(0.2);
+      } else {
+        api.startRotation(0.05);
+      }
+    } catch (_) {}
+  }, [open]);
+
   return (
     <div
       aria-hidden
@@ -36,16 +112,15 @@ export function DiscoBall({ open }: Props) {
         }}
       />
       <iframe
-        title="Disco ball with colored lights"
-        src={SKETCHFAB_SRC}
+        ref={iframeRef}
+        title="Disco ball animated"
+        id="api-frame"
         allow="autoplay; fullscreen; xr-spatial-tracking"
         allowFullScreen
-        loading="lazy"
         className="relative h-full w-full"
         style={{
           border: 0,
           background: "transparent",
-          // screen blending drops the viewer's black plate so the ball hangs in the room
           mixBlendMode: "screen",
           maskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
           WebkitMaskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
