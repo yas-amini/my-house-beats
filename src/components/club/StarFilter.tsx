@@ -65,7 +65,7 @@ export function StarFilter({ open, palette }: { open: boolean; palette: Palette 
         y = rand(48, 88);
       }
 
-      const bright = Math.random() < 0.18; // occasional hot flash
+      const bright = Math.random() < 0.4; // higher chance of hot flash
       const tint = [palette.c, "#fff6e2", palette.a][Math.floor(Math.random() * 3)] ?? "#fff";
 
       const star: Star = {
@@ -75,17 +75,17 @@ export function StarFilter({ open, palette }: { open: boolean; palette: Palette 
         size: bright ? rand(90, 150) : rand(26, 72),
         rot: rand(-14, 14),
         peak: bright ? rand(0.85, 1) : rand(0.28, 0.62),
-        dur: bright ? rand(420, 820) : rand(720, 1550),
+        dur: bright ? rand(200, 450) : rand(350, 750),
         tint,
       };
 
-      setStars((prev) => [...prev.slice(-6), star]);
+      setStars((prev) => [...prev.slice(-12), star]);
       window.setTimeout(() => {
         setStars((prev) => prev.filter((s) => s.key !== star.key));
       }, star.dur + 80);
 
-      // irregular, occasionally clustered timing — a touch more frequent now
-      const gap = Math.random() < 0.35 ? rand(50, 160) : rand(280, 1100);
+      // faster, more frequent timing
+      const gap = Math.random() < 0.45 ? rand(40, 120) : rand(100, 500);
       timer = setTimeout(spawn, gap);
     };
 
