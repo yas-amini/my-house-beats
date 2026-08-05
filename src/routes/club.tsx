@@ -126,7 +126,7 @@ function ClubPage() {
                 >
                   {status === "error"
                     ? "This record wouldn't load. Tap to try again, or skip to the next one."
-                    : "Your browser is holding the sound back. Tap here to play."}
+                    : "Tap here to feel the beat"}
                 </button>
               )}
             </article>
