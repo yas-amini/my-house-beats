@@ -11,8 +11,22 @@ function fmt(ms: number) {
 }
 
 export function PlayerBar() {
-  const { current, playing, toggle, position, duration, seek, next, prev, queue, queueLabel } =
-    usePlayer();
+  const {
+    current,
+    playing,
+    toggle,
+    position,
+    duration,
+    seek,
+    next,
+    prev,
+    queue,
+    queueLabel,
+    volume,
+    muted,
+    setVolume,
+    toggleMute,
+  } = usePlayer();
   const isClub = useRouterState({
     select: (s) => s.location.pathname.startsWith("/club"),
   });
