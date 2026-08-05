@@ -28,6 +28,8 @@ type PlayerState = {
   blocked: boolean;
   position: number;
   duration: number;
+  volume: number;
+  muted: boolean;
   queue: Track[];
   queueLabel: string | null;
   select: (track: Track) => void;
@@ -38,6 +40,8 @@ type PlayerState = {
   prev: () => void;
   toggle: () => void;
   seek: (ms: number) => void;
+  setVolume: (value: number) => void;
+  toggleMute: () => void;
 };
 
 const PlayerContext = createContext<PlayerState | null>(null);
@@ -68,6 +72,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AudioStatus>("idle");
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolumeState] = useState(100);
+  const [muted, setMuted] = useState(false);
+  const preMuteVolumeRef = useRef(100);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const widgetRef = useRef<any>(null);
   const seekingRef = useRef(false);
@@ -125,6 +132,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       watchdogRef.current = null;
     }
   };
+
+  const applyVolume = useCallback((value: number) => {
+    const w = widgetRef.current;
+    if (!w || typeof w.setVolume !== "function") return;
+    try {
+      w.setVolume(Math.max(0, Math.min(100, value)));
+    } catch {
+      /* widget may not be ready yet */
+    }
+  }, []);
 
   const bind = useCallback((w: any, token: number) => {
     w.unbind("play");
@@ -294,6 +311,36 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }, 400);
   }, []);
 
+  const setVolume = useCallback(
+    (value: number) => {
+      const clamped = Math.max(0, Math.min(100, value));
+      setVolumeState(clamped);
+      if (clamped > 0 && muted) setMuted(false);
+      applyVolume(muted && clamped > 0 ? 0 : clamped);
+    },
+    [muted, applyVolume],
+  );
+
+  const toggleMute = useCallback(() => {
+    setMuted((wasMuted) => {
+      const next = !wasMuted;
+      if (next) {
+        preMuteVolumeRef.current = volume || 100;
+        applyVolume(0);
+      } else {
+        const restored = preMuteVolumeRef.current || volume || 100;
+        setVolumeState(restored);
+        applyVolume(restored);
+      }
+      return next;
+    });
+  }, [volume, applyVolume]);
+
+  // Keep the widget in sync whenever the underlying volume/mute state changes.
+  useEffect(() => {
+    applyVolume(muted ? 0 : volume);
+  }, [muted, volume, applyVolume]);
+
   return (
     <PlayerContext.Provider
       value={{
@@ -303,6 +350,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         blocked: status === "blocked" || status === "error",
         position,
         duration,
+        volume,
+        muted,
         queue: queue.slice(index + 1),
         queueLabel,
         select,
@@ -312,6 +361,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         prev,
         toggle,
         seek,
+        setVolume,
+        toggleMute,
       }}
     >
       {children}
