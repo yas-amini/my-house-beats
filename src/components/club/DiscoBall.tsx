@@ -157,7 +157,15 @@ export function DiscoBall({ open }: Props) {
         }}
       />
       {/* Native WebGL Canvas */}
-      <div ref={containerRef} className="relative h-full w-full" />
+      <div
+        ref={containerRef}
+        className="relative h-full w-full"
+        style={{
+          mixBlendMode: "screen",
+          maskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
+          WebkitMaskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
+        }}
+      />
     </div>
   );
 }
