@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { usePlayer } from "@/lib/player";
-import { displayName, slugify } from "@/lib/tracks";
+import { displayName } from "@/lib/tracks";
 
 function fmt(ms: number) {
   if (!ms || ms < 0) return "0:00";

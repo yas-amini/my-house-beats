@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { usePlayer } from "@/lib/player";
-import { displayName, slugify, type Track } from "@/lib/tracks";
+import { displayName, type Track } from "@/lib/tracks";
 
 type Props = {
   list: Track[];
