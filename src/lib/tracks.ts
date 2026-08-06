@@ -62,26 +62,55 @@ export const curatorProfiles: CuratorProfile[] = [
     name: "Cashmere Sound (UK)",
     display: "Cashmere Sound (UK)",
     bio: "Cashmere Sound (UK) is the musical alias of Stefan Austin, showcasing his love for House music and the many subgenres that come with it. Growing up listening to House and Techno, Cashmere combines Tech House, Minimal/Deep Tech, Jackin House with a nostalgic House vibe.",
-    links: [{ label: "SoundCloud", url: "https://soundcloud.com/cashemere_sound" }],
+    links: [
+      { label: "SoundCloud", url: "https://soundcloud.com/cashemere_sound" },
+      { label: "Instagram", url: "https://www.instagram.com/cashmere.sounduk/" },
+      { label: "TikTok", url: "https://www.tiktok.com/@cashmeresounduk" },
+    ],
   },
   {
     name: "Yu_MusicRoom",
     display: "Yu_MusicRoom",
     bio: "Yuu Imamura, better known as Yu_MusicRoom, is a Japanese DJ and music curator with a deep connection to house music. He spent around 16 years DJing in Tokyo clubs, developing a style rooted in soulful, deep and groove-driven house. His sets move across Soulful House, Deep House, Chicago House, Jazz House and Afro House, often bringing together warm grooves, jazz influences and the more musical side of club culture. After years behind the decks, Yu_MusicRoom has continued sharing his selections through online mixes and livestreams, introducing listeners to house music from Japan and beyond.",
-    links: [{ label: "TikTok", url: "https://www.tiktok.com/@dj_yu55" }],
+    links: [
+      { label: "YouTube", url: "https://www.youtube.com/@yumusicroom" },
+      { label: "TikTok", url: "https://www.tiktok.com/@dj_yu55" },
+      { label: "Mixcloud", url: "https://www.mixcloud.com/yuu-imamura/" },
+      { label: "Stream archive", url: "https://streamrecorder.io/tiktok/@dj_yu55" },
+    ],
   },
   {
     name: "AMBI (UK)",
     display: "AMBI (UK)",
     bio: "UK DJ & producer duo. Minimal • Deep Tech • House.",
-    links: [{ label: "Links", url: "https://bass.fan/ambi" }],
+    links: [
+      { label: "Instagram", url: "https://www.instagram.com/ambi_uk/" },
+      { label: "TikTok", url: "https://www.tiktok.com/@ambi_uk_" },
+      { label: "SoundCloud", url: "https://soundcloud.com/ambiuk" },
+      { label: "Bandcamp", url: "https://ambiuk.bandcamp.com/" },
+      { label: "Links", url: "https://bass.fan/ambi" },
+    ],
   },
   {
     name: "louierds DJ",
     display: "LouieRds DJ",
-    links: [{ label: "TikTok", url: "https://www.tiktok.com/@louierds" }],
+    links: [
+      { label: "Instagram", url: "https://www.instagram.com/louierds/" },
+      { label: "TikTok", url: "https://www.tiktok.com/@louierds" },
+    ],
+  },
+  {
+    name: "HARBO",
+    display: "HARBO",
+    links: [
+      { label: "TikTok", url: "https://www.tiktok.com/@iamharbo" },
+      { label: "SoundCloud", url: "https://soundcloud.com/harbomusic" },
+      { label: "YouTube", url: "https://www.youtube.com/@iamharbo" },
+      { label: "Links", url: "https://bio.site/iamharbo" },
+    ],
   },
 ];
+
 
 export function profileFor(name: string): CuratorProfile | undefined {
   return curatorProfiles.find((p) => p.name === name);
