@@ -131,11 +131,7 @@ function ClubPage() {
               )}
             </article>
 
-          ) : (
-            <p className="mt-16 text-lg" style={{ color: "var(--club-dim)" }}>
-              The record is about to drop.
-            </p>
-          )}
+          ) : null}
 
         </section>
       </div>

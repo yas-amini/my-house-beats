@@ -1,172 +1,252 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 type Props = { open: boolean };
 
-/**
- * Native Three.js 3D Disco Ball Component
- * Loads /Disco_ball_animated.glb directly from the public folder into a WebGL canvas.
- * Zero external iframes, zero Sketchfab watermarks/hints, full 60fps local rendering.
- */
 export function DiscoBall({ open }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
-  const modelRef = useRef<THREE.Group | null>(null);
+  const modelRef = useRef<THREE.Object3D | null>(null);
+  const openRef = useRef(open);
+
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
 
   useEffect(() => {
     const container = containerRef.current;
+
     if (!container) return;
 
-    // 1. Scene setup
+    // Scene
     const scene = new THREE.Scene();
 
-    // 2. Camera setup
+    // Camera
     const width = container.clientWidth || 300;
     const height = container.clientHeight || 300;
+
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+
     camera.position.set(0, 0, 5);
 
-    // 3. Renderer setup
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+    });
+
     renderer.setSize(width, height);
+
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.0;
 
     container.appendChild(renderer.domElement);
 
-    // 4. Lighting setup (Ambient + Directional + Colored Point Lights for facet glints)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-    scene.add(ambientLight);
+    // Invisible HDRI environment used only for reflections
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    const rgbeLoader = new RGBELoader();
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
+    let envMap: THREE.Texture | null = null;
 
-    const pointLightA = new THREE.PointLight(0xa855f7, 3, 10);
-    pointLightA.position.set(-3, 2, 3);
-    scene.add(pointLightA);
+    rgbeLoader.load("/studio-lights.hdr", (hdrTexture) => {
+      envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
 
-    const pointLightB = new THREE.PointLight(0x3b82f6, 3, 10);
-    pointLightB.position.set(3, -2, 3);
-    scene.add(pointLightB);
+      scene.environment = envMap;
+      console.log("HDRI loaded:", envMap);
 
-    // 5. Load GLTF Model
+      hdrTexture.dispose();
+      pmremGenerator.dispose();
+    });
+
+    // Orange light
+    const warmLight = new THREE.PointLight(0xfbb46c, 5.0, 8);
+
+    warmLight.position.set(2.2, 1.8, 3);
+
+    scene.add(warmLight);
+
+    // Pink light
+    const pinkLight = new THREE.PointLight(0xff4f9a, 5.0, 8);
+
+    pinkLight.position.set(-2.2, -1.8, 3);
+
+    scene.add(pinkLight);
+
+    // Load disco ball
     const loader = new GLTFLoader();
+
     loader.load(
       "/Disco_ball_animated.glb",
-      (gltf) => {
-        const model = gltf.scene;
-        modelRef.current = model;
 
-        // Auto-center and scale model
-        const box = new THREE.Box3().setFromObject(model);
+      (gltf) => {
+        const root = gltf.scene;
+
+        let discoBallNode: THREE.Object3D | null = null;
+
+        root.traverse((child) => {
+          // Find the rotating disco ball node
+          if (child.name === "disco_ball" && !discoBallNode) {
+            discoBallNode = child;
+          }
+
+          // Find meshes
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+
+            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+
+            materials.forEach((material) => {
+              const mat = material as THREE.MeshStandardMaterial;
+
+              // Diagnostic information
+              console.log("Material:", mat.name);
+              console.log("Metalness:", mat.metalness);
+              console.log("Roughness:", mat.roughness);
+              console.log("Emissive:", mat.emissive);
+              console.log("Emissive intensity:", mat.emissiveIntensity);
+
+              // Very weak environment reflection
+              mat.envMapIntensity = 1.0;
+
+              mat.metalness = 1.0;
+              mat.roughness = 0.0;
+
+              // Make sure the material isn't emitting light
+              if (mat.emissive) {
+                mat.emissive.set(0x000000);
+              }
+
+              mat.emissiveIntensity = 0;
+
+              mat.needsUpdate = true;
+            });
+          }
+        });
+
+        // Center and scale model
+        const box = new THREE.Box3().setFromObject(root);
+
         const center = box.getCenter(new THREE.Vector3());
+
         const size = box.getSize(new THREE.Vector3());
+
         const maxDim = Math.max(size.x, size.y, size.z);
 
         if (maxDim > 0) {
-          const scale = 2.4 / maxDim;
-          model.scale.set(scale, scale, scale);
-        }
-        model.position.sub(center.multiplyScalar(model.scale.x));
+          const scale = 2.6 / maxDim;
 
-        scene.add(model);
+          root.scale.set(scale, scale, scale);
 
-        // Process animations if included in GLB
-        if (gltf.animations && gltf.animations.length > 0) {
-          const mixer = new THREE.AnimationMixer(model);
-          gltf.animations.forEach((clip) => {
-            const action = mixer.clipAction(clip);
-            action.play();
-          });
-          mixerRef.current = mixer;
+          root.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
         }
+
+        scene.add(root);
+
+        // Rotate only the disco ball node
+        modelRef.current = discoBallNode || root;
       },
+
       undefined,
-      (error) => console.error("Error loading GLTF model:", error)
+
+      (error) => {
+        console.error("Error loading GLTF model:", error);
+      },
     );
 
-    // 6. Responsive resize handler
+    // Resize
     const handleResize = () => {
       if (!container) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      camera.aspect = w / h;
+
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      camera.aspect = width / height;
+
       camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
+
+      renderer.setSize(width, height);
     };
+
     window.addEventListener("resize", handleResize);
 
-    // 7. Animation Loop
-    const clock = new THREE.Clock();
+    // Animation
     let reqId: number;
+
+    const rotationAxis = new THREE.Vector3(0, 0, 1);
 
     const animate = () => {
       reqId = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-
-      if (mixerRef.current) {
-        mixerRef.current.update(delta);
-      }
 
       if (modelRef.current) {
-        // Continuous smooth Y rotation
-        modelRef.current.rotation.y += open ? 0.008 : 0.002;
+        modelRef.current.rotateOnAxis(rotationAxis, openRef.current ? 0.009 : 0.002);
       }
 
       renderer.render(scene, camera);
     };
+
     animate();
 
+    // Cleanup
     return () => {
       cancelAnimationFrame(reqId);
+
       window.removeEventListener("resize", handleResize);
+
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
+
+      envMap?.dispose();
       renderer.dispose();
     };
-  }, [open]);
+  }, []);
 
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed right-0 top-[-4vh] z-[1] h-[56vw] max-h-[300px] w-[56vw] max-w-[300px] select-none sm:right-[-4vw] sm:top-[-8vh] sm:h-[min(46vw,540px)] sm:max-h-none sm:w-[min(46vw,540px)] sm:max-w-none"
+      className="
+        pointer-events-none
+        fixed
+        right-0
+        top-[-4vh]
+        z-[1]
+        h-[56vw]
+        max-h-[300px]
+        w-[56vw]
+        max-w-[300px]
+        select-none
+
+        sm:right-[-4vw]
+        sm:top-[-8vh]
+        sm:h-[min(46vw,540px)]
+        sm:max-h-none
+        sm:w-[min(46vw,540px)]
+        sm:max-w-none
+      "
       style={{
-        opacity: open ? 0.95 : 0.4,
-        filter: open ? "saturate(1.05)" : "saturate(0.5) blur(1px)",
-        transition: "opacity 2s ease, filter 2s ease",
+        opacity: open ? 1 : 0.5,
+        transition: "opacity 2s ease",
       }}
     >
-      {/* rig: hanging wire */}
+      {/* Hanging wire */}
       <div
-        className="absolute left-1/2 top-0 h-[16vh] w-px -translate-x-1/2"
-        style={{ background: "linear-gradient(to bottom, transparent, var(--club-line))" }}
-      />
-      {/* ambient light glow behind ball */}
-      <div
-        className={`absolute inset-[6%] rounded-full ${open ? "club-ball-glow" : ""}`}
+        className="
+          absolute
+          left-1/2
+          top-0
+          h-[16vh]
+          w-px
+          -translate-x-1/2
+        "
         style={{
-          background:
-            "radial-gradient(circle, color-mix(in oklab, var(--club-light-c) 55%, transparent) 0%, transparent 62%)",
-          filter: "blur(70px)",
-          opacity: open ? 0.75 : 0.25,
-          transition: "opacity 2s ease",
+          background: "linear-gradient(to bottom, transparent, var(--club-line))",
         }}
       />
-      {/* Native WebGL Canvas */}
-      <div
-        ref={containerRef}
-        className="relative h-full w-full"
-        style={{
-          mixBlendMode: "screen",
-          maskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
-          WebkitMaskImage: "radial-gradient(circle at 50% 46%, #000 40%, transparent 62%)",
-        }}
-      />
+
+      {/* Three.js canvas */}
+      <div ref={containerRef} className="relative h-full w-full" />
     </div>
   );
 }
-
