@@ -44,40 +44,126 @@ export function tracksForCurator(name: string) {
   return tracks.filter((t) => t.dj === name);
 }
 
+/* ---------- curator profiles ---------- */
+
+export type CuratorProfile = {
+  /** matches Track.dj */
+  name: string;
+  display: string;
+  bio?: string;
+  links?: { label: string; url: string }[];
+};
+
+/** Sources that are storage platforms, not people. */
+export const PLATFORM_SOURCES = ["Spotify", "SoundCloud"] as const;
+
+export const curatorProfiles: CuratorProfile[] = [
+  {
+    name: "Cashmere Sound (UK)",
+    display: "Cashmere Sound (UK)",
+    bio: "Cashmere Sound (UK) is the musical alias of Stefan Austin, showcasing his love for House music and the many subgenres that come with it. Growing up listening to House and Techno, Cashmere combines Tech House, Minimal/Deep Tech, Jackin House with a nostalgic House vibe.",
+    links: [{ label: "SoundCloud", url: "https://soundcloud.com/cashemere_sound" }],
+  },
+  {
+    name: "Yu_MusicRoom",
+    display: "Yu_MusicRoom",
+    bio: "Yuu Imamura, better known as Yu_MusicRoom, is a Japanese DJ and music curator with a deep connection to house music. He spent around 16 years DJing in Tokyo clubs, developing a style rooted in soulful, deep and groove-driven house. His sets move across Soulful House, Deep House, Chicago House, Jazz House and Afro House, often bringing together warm grooves, jazz influences and the more musical side of club culture. After years behind the decks, Yu_MusicRoom has continued sharing his selections through online mixes and livestreams, introducing listeners to house music from Japan and beyond.",
+    links: [{ label: "TikTok", url: "https://www.tiktok.com/@dj_yu55" }],
+  },
+  {
+    name: "louierds DJ",
+    display: "LouieRds DJ",
+    links: [{ label: "TikTok", url: "https://www.tiktok.com/@louierds" }],
+  },
+];
+
+export function profileFor(name: string): CuratorProfile | undefined {
+  return curatorProfiles.find((p) => p.name === name);
+}
+
+export function displayName(name: string) {
+  return profileFor(name)?.display ?? name;
+}
+
 /* ---------- dance floors ---------- */
+
+export type FloorSource = {
+  /** curator name as stored on the track */
+  name: string;
+  display: string;
+  slug: string;
+  count: number;
+  kind: "dj" | "collection";
+};
 
 export type Floor = {
   id: string;
-  /** "Main floor" or "Floor 02" */
-  number: string;
   name: string;
+  tagline: string;
+  description: string;
   count: number;
-  curator: string | null;
+  sources: FloorSource[];
 };
 
-/** A curator only earns a floor when there's enough music to fill a room. */
-const FLOOR_MIN_TRACKS = 12;
+const platform = (n: string) => (PLATFORM_SOURCES as readonly string[]).includes(n);
+
+const toSource = (c: Curator, kind: FloorSource["kind"]): FloorSource => ({
+  name: c.name,
+  display: displayName(c.name),
+  slug: c.slug,
+  count: c.count,
+  kind,
+});
+
+const liveSources = curators
+  .filter((c) => !platform(c.name) && c.name !== UNCREDITED)
+  .map((c) => toSource(c, "dj"));
+
+const battleSources = curators.filter((c) => platform(c.name)).map((c) => toSource(c, "collection"));
+
+const sum = (list: FloorSource[]) => list.reduce((n, s) => n + s.count, 0);
 
 export const floors: Floor[] = [
-  { id: "main", number: "Main floor", name: "All records", count: tracks.length, curator: null },
-  ...curators
-    .filter((c) => c.count >= FLOOR_MIN_TRACKS && c.name !== UNCREDITED)
-    .map((c, i) => ({
-      id: c.slug,
-      number: `Floor ${String(i + 2).padStart(2, "0")}`,
-      name: c.name,
-      count: c.count,
-      curator: c.name,
-    })),
+  {
+    id: "main",
+    name: "Main Floor",
+    tagline: "The whole archive, shuffled",
+    description:
+      "Every record in the collection, played in random order. No source, no sorting — just the room.",
+    count: tracks.length,
+    sources: [],
+  },
+  {
+    id: "live",
+    name: "Live Floor",
+    tagline: "Found in TikTok live DJ sessions",
+    description:
+      "Records I caught while watching DJs play live. Every track here traces back to a person behind the decks.",
+    count: sum(liveSources),
+    sources: liveSources,
+  },
+  {
+    id: "battle",
+    name: "Battle Floor",
+    tagline: "Playlists built at street & house battles",
+    description:
+      "Years of handpicked cuts from my own playlists, gathered around dance battles. The platform is only where they live, not who played them.",
+    count: sum(battleSources),
+    sources: battleSources,
+  },
 ];
 
 export function floorById(id: string) {
   return floors.find((f) => f.id === id) ?? floors[0]!;
 }
 
-export function tracksForFloor(floor: Floor) {
-  return floor.curator ? tracksForCurator(floor.curator) : tracks;
+export function tracksForFloor(floor: Floor, sourceName?: string | null) {
+  if (sourceName) return tracksForCurator(sourceName);
+  if (floor.id === "main") return tracks;
+  const names = new Set(floor.sources.map((s) => s.name));
+  return tracks.filter((t) => names.has(t.dj as string));
 }
+
 
 /* ---------- time ---------- */
 

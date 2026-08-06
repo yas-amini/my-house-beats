@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { usePlayer } from "@/lib/player";
-import { slugify, type Track } from "@/lib/tracks";
+import { displayName, slugify, type Track } from "@/lib/tracks";
 
 type Props = {
   list: Track[];
@@ -58,7 +58,7 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                   <span className="block truncate text-sm text-muted-foreground">{t.title}</span>
                 </span>
                 <span className="hidden truncate font-mono text-[11px] text-muted-foreground sm:block">
-                  via {t.dj}
+                  via {displayName(t.dj as string)}
                 </span>
                 <span className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">
                   {t.year ?? "—"}
@@ -128,7 +128,7 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                 params={{ slug: slugify(t.dj as string) }}
                 className="underline decoration-border underline-offset-2 transition-colors hover:text-primary hover:decoration-primary"
               >
-                {t.dj}
+                {displayName(t.dj as string)}
               </Link>
             </p>
           </article>

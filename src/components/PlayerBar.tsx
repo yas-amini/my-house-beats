@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { usePlayer } from "@/lib/player";
-import { slugify } from "@/lib/tracks";
+import { displayName, slugify } from "@/lib/tracks";
 
 function fmt(ms: number) {
   if (!ms || ms < 0) return "0:00";
@@ -118,7 +118,7 @@ export function PlayerBar() {
               className="underline decoration-border underline-offset-2 hover:text-primary"
               style={isClub ? { color: "var(--club-accent)" } : undefined}
             >
-              {current.dj}
+              {displayName(current.dj as string)}
             </Link>
           </p>
         </div>
