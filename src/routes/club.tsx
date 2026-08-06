@@ -207,6 +207,59 @@ function FloorNav({
           );
         })}
       </ul>
+
+      <FloorBios floor={active} activeSource={activeSource} />
     </nav>
+  );
+}
+
+function FloorBios({ floor, activeSource }: { floor: Floor; activeSource: FloorSource | null }) {
+  const djs = floor.sources.filter((s) => s.kind === "dj");
+  const shown = activeSource ? djs.filter((s) => s.name === activeSource.name) : djs;
+  const withBio = shown
+    .map((s) => ({ source: s, profile: profileFor(s.name) }))
+    .filter((x) => x.profile?.bio || x.profile?.links?.length);
+
+  if (withBio.length === 0) return null;
+
+  return (
+    <section className="mt-8 border-t pt-6" style={{ borderColor: "var(--club-line)" }}>
+      <p className="mb-4 font-mono text-[11px] tracking-widest" style={{ color: "var(--club-dim)" }}>
+        {activeSource ? "About" : "The DJs"}
+      </p>
+      <ul className="space-y-6">
+        {withBio.map(({ source, profile }) => (
+          <li key={source.slug}>
+            <p
+              className="text-[15px] leading-tight"
+              style={{ fontFamily: "var(--font-display)", letterSpacing: "0.03em", color: "var(--club-ink)" }}
+            >
+              {source.display}
+            </p>
+            {profile?.bio && (
+              <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "var(--club-dim)" }}>
+                {profile.bio}
+              </p>
+            )}
+            {profile?.links?.length ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {profile.links.map((l) => (
+                  <a
+                    key={l.url}
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border px-2.5 py-1 font-mono text-[10px] transition-opacity hover:opacity-100"
+                    style={{ borderColor: "var(--club-line)", color: "var(--club-accent)", opacity: 0.8 }}
+                  >
+                    {l.label} ↗
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
