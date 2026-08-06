@@ -241,22 +241,8 @@ function FloorBios({ floor, activeSource }: { floor: Floor; activeSource: FloorS
                 {profile.bio}
               </p>
             )}
-            {profile?.links?.length ? (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {profile.links.map((l) => (
-                  <a
-                    key={l.url}
-                    href={l.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full border px-2.5 py-1 font-mono text-[10px] transition-opacity hover:opacity-100"
-                    style={{ borderColor: "var(--club-line)", color: "var(--club-accent)", opacity: 0.8 }}
-                  >
-                    {l.label} ↗
-                  </a>
-                ))}
-              </div>
-            ) : null}
+            {profile?.links?.length ? <SocialLinks links={profile.links} /> : null}
+
           </li>
         ))}
       </ul>
