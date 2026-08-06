@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlayer } from "@/lib/player";
 import { ClubStatus } from "@/components/club/ClubStatus";
@@ -6,21 +6,22 @@ import { ClubAtmosphere } from "@/components/club/ClubAtmosphere";
 import { DiscoBall } from "@/components/club/DiscoBall";
 import { StarFilter } from "@/components/club/StarFilter";
 import { useArtworkPalette } from "@/lib/palette";
-import { floors, shuffle, tracksForFloor, type Floor } from "@/lib/tracks";
+import { floors, shuffle, tracksForFloor, type Floor, type FloorSource } from "@/lib/tracks";
 
 export const Route = createFileRoute("/club")({
   head: () => ({
     meta: [
-      { title: "Club — My House" },
+      { title: "The Club — Main, Live & Battle Floors" },
       {
         name: "description",
         content:
-          "Walk in and the record is already playing. A hazy 1970s dance floor for a decade-deep house archive, with a floor for every curator.",
+          "Three dance floors in one archive: the Main Floor shuffles every record, the Live Floor holds TikTok live DJ discoveries, and the Battle Floor collects playlists built at dance battles.",
       },
-      { property: "og:title", content: "Club — My House" },
+      { property: "og:title", content: "The Club — Main, Live & Battle Floors" },
       {
         property: "og:description",
-        content: "Step onto the main floor: the disco ball turns, the haze moves, the music keeps going.",
+        content:
+          "Step onto the main floor, follow a DJ on the live floor, or dig through the battle playlists.",
       },
     ],
   }),
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/club")({
 function ClubPage() {
   const { current, status, blocked, playList, retry } = usePlayer();
   const [floorId, setFloorId] = useState("main");
+  const [sourceName, setSourceName] = useState<string | null>(null);
   const palette = useArtworkPalette(current?.cover_art);
 
   const floor = useMemo(() => floors.find((f) => f.id === floorId) ?? floors[0]!, [floorId]);
@@ -38,9 +40,10 @@ function ClubPage() {
    * Start playback synchronously inside the tap handler — mobile browsers only
    * allow audio that begins as a direct result of a user gesture.
    */
-  const startFloor = (f: Floor) => {
+  const start = (f: Floor, source?: FloorSource | null) => {
     setFloorId(f.id);
-    playList(shuffle(tracksForFloor(f)), 0, f.curator ?? "Main floor");
+    setSourceName(source?.name ?? null);
+    playList(shuffle(tracksForFloor(f, source?.name)), 0, source?.display ?? f.name);
   };
 
   // The room is already playing when you walk in; if the browser blocks it,
@@ -49,11 +52,12 @@ function ClubPage() {
   useEffect(() => {
     if (booted.current) return;
     booted.current = true;
-    playList(shuffle(tracksForFloor(floor)), 0, floor.curator ?? "Main floor");
+    playList(shuffle(tracksForFloor(floor)), 0, floor.name);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const open = status === "playing";
+  const activeSource = floor.sources.find((s) => s.name === sourceName) ?? null;
 
   return (
     <main className="club relative min-h-[calc(100vh-57px)] overflow-hidden">
@@ -61,21 +65,25 @@ function ClubPage() {
       <DiscoBall open={open} />
       <StarFilter open={open} palette={palette} />
 
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 pb-40 pt-12 md:grid-cols-[190px_1fr] md:gap-14 md:pt-16">
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 px-5 pb-40 pt-12 md:grid-cols-[240px_1fr] md:gap-14 md:pt-16">
         <FloorNav
           floors={floors}
           active={floor}
-          onPick={(id) => startFloor(floors.find((f) => f.id === id) ?? floors[0]!)}
+          activeSource={activeSource}
+          onPick={start}
         />
 
-
         <section className="min-w-0">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <ClubStatus open={open} />
             <span className="font-mono text-[11px] tracking-widest" style={{ color: "var(--club-dim)" }}>
-              {floor.curator ? floor.name : "Main floor"}
+              {activeSource ? `${floor.name} · ${activeSource.display}` : floor.name}
             </span>
           </div>
+
+          <p className="mt-4 max-w-xl text-sm leading-relaxed" style={{ color: "var(--club-dim)" }}>
+            {floor.description}
+          </p>
 
           {current ? (
             <article key={current.id} className="club-enter mt-10 max-w-xl">
@@ -109,13 +117,6 @@ function ClubPage() {
               <p className="mt-1 text-sm" style={{ color: "var(--club-dim)" }}>
                 {[current.album, current.year].filter(Boolean).join(" · ")}
               </p>
-              <p
-                className="mt-6 text-base"
-                style={{ color: "var(--club-dim)" }}
-              >
-                Discovered through{" "}
-                <span style={{ color: "var(--club-accent)", fontStyle: "normal" }}>{current.dj}</span>
-              </p>
 
               {/* transport lives in the global PlayerBar */}
               {blocked && (
@@ -130,9 +131,7 @@ function ClubPage() {
                 </button>
               )}
             </article>
-
           ) : null}
-
         </section>
       </div>
     </main>
@@ -142,43 +141,78 @@ function ClubPage() {
 function FloorNav({
   floors: list,
   active,
+  activeSource,
   onPick,
 }: {
   floors: Floor[];
   active: Floor;
-  onPick: (id: string) => void;
+  activeSource: FloorSource | null;
+  onPick: (floor: Floor, source?: FloorSource | null) => void;
 }) {
   return (
     <nav className="min-w-0 md:sticky md:top-24 md:self-start">
       <p className="mb-4 font-mono text-[11px] tracking-widest" style={{ color: "var(--club-dim)" }}>
-        Dance floors
+        The Club
       </p>
-      <ul className="flex gap-2 overflow-x-auto pb-2 md:block md:overflow-visible md:pb-0">
+      <ul className="space-y-6">
         {list.map((f) => {
           const on = f.id === active.id;
           return (
-            <li key={f.id} className="shrink-0 md:mb-3">
+            <li key={f.id}>
               <button
-                onClick={() => onPick(f.id)}
+                onClick={() => onPick(f)}
                 className="text-left transition-opacity"
                 style={{ opacity: on ? 1 : 0.55 }}
               >
                 <span
-                  className="block font-mono text-[10px] tracking-widest"
-                  style={{ color: on ? "var(--club-accent)" : "var(--club-dim)" }}
-                >
-                  {f.number}
-                </span>
-                <span
-                  className="block whitespace-nowrap text-[17px] leading-tight"
-                  style={{ fontFamily: "var(--font-display)", letterSpacing: "0.01em" }}
+                  className="block text-[19px] leading-tight"
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    letterSpacing: "0.03em",
+                    color: on && !activeSource ? "var(--club-accent)" : undefined,
+                  }}
                 >
                   {f.name}
                 </span>
                 <span className="block text-xs" style={{ color: "var(--club-dim)" }}>
-                  {f.count} records
+                  {f.tagline} · {f.count} records
                 </span>
               </button>
+
+              {f.sources.length > 0 && (
+                <ul className="mt-2 space-y-1.5 border-l pl-3" style={{ borderColor: "var(--club-line)" }}>
+                  {f.sources.map((s) => {
+                    const picked = on && activeSource?.name === s.name;
+                    return (
+                      <li key={s.slug} className="flex items-baseline gap-2">
+                        <button
+                          onClick={() => onPick(f, s)}
+                          className="text-left text-sm transition-opacity"
+                          style={{
+                            opacity: picked ? 1 : 0.6,
+                            color: picked ? "var(--club-accent)" : "var(--club-ink)",
+                          }}
+                        >
+                          {s.display}
+                          <span className="ml-1.5 font-mono text-[10px] tabular-nums" style={{ color: "var(--club-dim)" }}>
+                            {s.count}
+                          </span>
+                        </button>
+                        {s.kind === "dj" && (
+                          <Link
+                            to="/curator/$slug"
+                            params={{ slug: s.slug }}
+                            className="font-mono text-[10px] underline underline-offset-2"
+                            style={{ color: "var(--club-dim)" }}
+                          >
+                            profile
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </li>
           );
         })}
