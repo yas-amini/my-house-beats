@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClubRouteImport } from './routes/club'
 import { Route as RadioRouteImport } from './routes/radio'
-import { Route as CuratorSlugRouteImport } from './routes/curator.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,44 +28,35 @@ const RadioRoute = RadioRouteImport.update({
   path: '/radio',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CuratorSlugRoute = CuratorSlugRouteImport.update({
-  id: '/curator/$slug',
-  path: '/curator/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/club': typeof ClubRoute
   '/radio': typeof RadioRoute
-  '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/club': typeof ClubRoute
   '/radio': typeof RadioRoute
-  '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/club': typeof ClubRoute
   '/radio': typeof RadioRoute
-  '/curator/$slug': typeof CuratorSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/club' | '/radio' | '/curator/$slug'
+  fullPaths: '/' | '/club' | '/radio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/club' | '/radio' | '/curator/$slug'
-  id: '__root__' | '/' | '/club' | '/radio' | '/curator/$slug'
+  to: '/' | '/club' | '/radio'
+  id: '__root__' | '/' | '/club' | '/radio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ClubRoute: typeof ClubRoute
   RadioRoute: typeof RadioRoute
-  CuratorSlugRoute: typeof CuratorSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,13 +82,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RadioRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/curator/$slug': {
-      id: '/curator/$slug'
-      path: '/curator/$slug'
-      fullPath: '/curator/$slug'
-      preLoaderRoute: typeof CuratorSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -106,7 +89,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ClubRoute: ClubRoute,
   RadioRoute: RadioRoute,
-  CuratorSlugRoute: CuratorSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

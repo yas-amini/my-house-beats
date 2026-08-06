@@ -71,6 +71,12 @@ export const curatorProfiles: CuratorProfile[] = [
     links: [{ label: "TikTok", url: "https://www.tiktok.com/@dj_yu55" }],
   },
   {
+    name: "AMBI (UK)",
+    display: "AMBI (UK)",
+    bio: "UK DJ & producer duo. Minimal • Deep Tech • House.",
+    links: [{ label: "Links", url: "https://bass.fan/ambi" }],
+  },
+  {
     name: "louierds DJ",
     display: "LouieRds DJ",
     links: [{ label: "TikTok", url: "https://www.tiktok.com/@louierds" }],

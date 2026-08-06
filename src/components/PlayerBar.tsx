@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { usePlayer } from "@/lib/player";
-import { displayName, slugify } from "@/lib/tracks";
+import { displayName } from "@/lib/tracks";
 
 function fmt(ms: number) {
   if (!ms || ms < 0) return "0:00";
@@ -112,14 +112,9 @@ export function PlayerBar() {
           <p className="truncate font-mono text-[11px]"
             style={{ color: isClub ? "var(--club-dim)" : undefined }}>
             Released {current.year ?? "—"} · discovered through{" "}
-            <Link
-              to="/curator/$slug"
-              params={{ slug: slugify(current.dj as string) }}
-              className="underline decoration-border underline-offset-2 hover:text-primary"
-              style={isClub ? { color: "var(--club-accent)" } : undefined}
-            >
+            <span style={isClub ? { color: "var(--club-accent)" } : undefined}>
               {displayName(current.dj as string)}
-            </Link>
+            </span>
           </p>
         </div>
         {queue.length > 0 && (
