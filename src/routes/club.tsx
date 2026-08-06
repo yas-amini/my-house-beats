@@ -5,6 +5,8 @@ import { ClubStatus } from "@/components/club/ClubStatus";
 import { ClubAtmosphere } from "@/components/club/ClubAtmosphere";
 import { DiscoBall } from "@/components/club/DiscoBall";
 import { StarFilter } from "@/components/club/StarFilter";
+import { SocialLinks } from "@/components/club/SocialLinks";
+
 import { useArtworkPalette } from "@/lib/palette";
 import { floors, profileFor, shuffle, tracksForFloor, type Floor, type FloorSource } from "@/lib/tracks";
 
