@@ -11,8 +11,22 @@ function fmt(ms: number) {
 }
 
 export function PlayerBar() {
-  const { current, playing, toggle, position, duration, seek, next, prev, queue, queueLabel } =
-    usePlayer();
+  const {
+    current,
+    playing,
+    toggle,
+    position,
+    duration,
+    seek,
+    next,
+    prev,
+    queue,
+    queueLabel,
+    volume,
+    muted,
+    setVolume,
+    toggleMute,
+  } = usePlayer();
   const isClub = useRouterState({
     select: (s) => s.location.pathname.startsWith("/club"),
   });
@@ -118,6 +132,63 @@ export function PlayerBar() {
             {queue.length} up next
           </Link>
         )}
+
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={toggleMute}
+            aria-label={muted ? "Unmute" : "Mute"}
+            className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
+              isClub
+                ? "border-[color:var(--club-line)] text-[color:var(--club-ink)] hover:text-[color:var(--club-accent)]"
+                : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
+          >
+            {muted || volume === 0 ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            ) : volume < 50 ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            )}
+          </button>
+          <div className="relative flex w-16 items-center sm:w-20">
+            <div
+              className="h-1 w-full rounded-full bg-border"
+              style={
+                isClub
+                  ? { background: "color-mix(in oklab, var(--club-ink) 20%, transparent)" }
+                  : undefined
+              }
+            />
+            <div
+              className="pointer-events-none absolute left-0 top-0 h-1 rounded-full bg-primary"
+              style={{
+                width: `${muted ? 0 : volume}%`,
+                ...(isClub ? { background: "var(--club-accent)" } : {}),
+              }}
+            />
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={muted ? 0 : volume}
+              onChange={(e) => setVolume(Number(e.target.value))}
+              aria-label="Volume"
+              className="absolute inset-y-0 left-0 w-full cursor-pointer opacity-0"
+            />
+          </div>
+        </div>
       </div>
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3">
         <span
