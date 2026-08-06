@@ -198,16 +198,6 @@ function FloorNav({
                             {s.count}
                           </span>
                         </button>
-                        {s.kind === "dj" && (
-                          <Link
-                            to="/curator/$slug"
-                            params={{ slug: s.slug }}
-                            className="font-mono text-[10px] underline underline-offset-2"
-                            style={{ color: "var(--club-dim)" }}
-                          >
-                            profile
-                          </Link>
-                        )}
                       </li>
                     );
                   })}
