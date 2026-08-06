@@ -122,14 +122,7 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
               <p className="truncate text-sm text-muted-foreground">{t.title}</p>
             </button>
             <p className="mt-1.5 truncate font-mono text-[11px] text-muted-foreground">
-              via{" "}
-              <Link
-                to="/curator/$slug"
-                params={{ slug: slugify(t.dj as string) }}
-                className="underline decoration-border underline-offset-2 transition-colors hover:text-primary hover:decoration-primary"
-              >
-                {displayName(t.dj as string)}
-              </Link>
+              via {displayName(t.dj as string)}
             </p>
           </article>
         );

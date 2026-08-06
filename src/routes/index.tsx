@@ -100,15 +100,6 @@ function Archive() {
             </button>
           ))}
         </div>
-        {curator && (
-          <Link
-            to="/curator/$slug"
-            params={{ slug: curators.find((c) => c.name === curator)?.slug ?? "" }}
-            className="mt-3 inline-block font-mono text-[11px] text-primary underline underline-offset-4"
-          >
-            Open {curator}'s full page →
-          </Link>
-        )}
       </section>
 
       <section className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
