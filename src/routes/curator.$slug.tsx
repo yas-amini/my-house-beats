@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { TrackCollection } from "@/components/TrackCollection";
 import { usePlayer } from "@/lib/player";
-import { curatorBySlug, curatorStats, shuffle } from "@/lib/tracks";
+import { curatorBySlug, curatorStats, displayName, profileFor, shuffle } from "@/lib/tracks";
 
 export const Route = createFileRoute("/curator/$slug")({
   loader: ({ params }) => {
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/curator/$slug")({
     return { curator };
   },
   head: ({ loaderData }) => {
-    const name = loaderData?.curator.name ?? "Collection";
+    const name = loaderData ? displayName(loaderData.curator.name) : "Collection";
     const title = `Discovered through ${name} — My House Archive`;
     const description = loaderData
       ? `${loaderData.curator.count} house records I first heard through ${name}, with release years, artists and albums.`
@@ -34,6 +34,8 @@ function CuratorPage() {
   const { playList } = usePlayer();
   const stats = useMemo(() => curatorStats(curator.name), [curator.name]);
   const [year, setYear] = useState<number | null>(null);
+  const profile = profileFor(curator.name);
+  const name = displayName(curator.name);
 
   const list = useMemo(
     () => (year == null ? stats.list : stats.list.filter((t) => Number(t.year) === year)),
@@ -46,29 +48,51 @@ function CuratorPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-5 pb-40 pt-10">
-      <Link to="/" className="font-mono text-[11px] text-muted-foreground hover:text-primary">
-        ← back to the archive
+      <Link to="/club" className="font-mono text-[11px] text-muted-foreground hover:text-primary">
+        ← back to the club
       </Link>
 
       <header className="mt-6 grid gap-6 border-b border-border pb-8 md:grid-cols-[1.3fr_1fr] md:items-end">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            Discovered through
+            {profile ? "Live Floor · DJ" : "Discovered through"}
           </p>
-          <h1 className="mt-3 font-display text-6xl leading-[0.9] tracking-wide sm:text-7xl">
-            {curator.name}
-          </h1>
+          <div className="mt-3 flex items-center gap-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-border bg-muted font-display text-2xl tracking-wide">
+              {name.slice(0, 2).toUpperCase()}
+            </div>
+            <h1 className="font-display text-6xl leading-[0.9] tracking-wide sm:text-7xl">{name}</h1>
+          </div>
+          {profile?.bio && (
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">{profile.bio}</p>
+          )}
           <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
             {curator.count} records reached me through this curator
             {stats.span ? `, released between ${stats.span[0]} and ${stats.span[1]}` : ""}.
           </p>
+          {profile?.links?.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {profile.links.map((l) => (
+                <a
+                  key={l.url}
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full border border-border px-3 py-1.5 font-mono text-[11px] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  {l.label} ↗
+                </a>
+              ))}
+            </div>
+          ) : null}
           <button
-            onClick={() => playList(shuffle(stats.list), 0, curator.name)}
+            onClick={() => playList(shuffle(stats.list), 0, name)}
             className="mt-5 rounded-full bg-primary px-4 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-primary-foreground transition-transform hover:scale-[1.03]"
           >
             Play this thread
           </button>
         </div>
+
 
         <dl className="grid grid-cols-3 gap-4 font-mono text-[11px] text-muted-foreground">
           <div>
