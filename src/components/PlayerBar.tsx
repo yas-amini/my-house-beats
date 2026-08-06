@@ -118,7 +118,7 @@ export function PlayerBar() {
               className="underline decoration-border underline-offset-2 hover:text-primary"
               style={isClub ? { color: "var(--club-accent)" } : undefined}
             >
-              {current.dj}
+              {displayName(current.dj as string)}
             </Link>
           </p>
         </div>
