@@ -142,7 +142,7 @@ const platform = (n: string) => (PLATFORM_SOURCES as readonly string[]).includes
 
 const toSource = (c: Curator, kind: FloorSource["kind"]): FloorSource => ({
   name: c.name,
-  display: displayName(c.name),
+  display: displayName(c.name) ?? c.name,
   slug: c.slug,
   count: c.count,
   kind,
