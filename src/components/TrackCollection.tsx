@@ -57,8 +57,8 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                   </span>
                   <span className="block truncate text-sm text-muted-foreground">{t.title}</span>
                 </span>
-                <span className="hidden truncate font-mono text-[11px] text-muted-foreground sm:block">
-                  via {displayName(t.dj as string)}
+                <span className="hidden truncate font-mono text-xs text-muted-foreground sm:block">
+                  {t.dj ? `via ${displayName(t.dj)}` : ""}
                 </span>
                 <span className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">
                   {t.year ?? "—"}
@@ -121,9 +121,11 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
               </h3>
               <p className="truncate text-sm text-muted-foreground">{t.title}</p>
             </button>
-            <p className="mt-1.5 truncate font-mono text-[11px] text-muted-foreground">
-              via {displayName(t.dj as string)}
-            </p>
+            {t.dj && (
+              <p className="mt-1.5 truncate font-mono text-xs text-muted-foreground">
+                via {displayName(t.dj)}
+              </p>
+            )}
           </article>
         );
       })}
