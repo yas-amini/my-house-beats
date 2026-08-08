@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+
 type Props = { open: boolean };
 
 export function DiscoBall({ open }: Props) {
@@ -34,9 +35,8 @@ export function DiscoBall({ open }: Props) {
       alpha: true,
       antialias: true,
     });
-
+    renderer.setClearColor(0x000000, 0);
     renderer.setSize(width, height);
-
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -111,8 +111,7 @@ export function DiscoBall({ open }: Props) {
               mat.envMapIntensity = 1.0;
 
               mat.metalness = 1.0;
-              mat.roughness = 0.0;
-
+              mat.roughness = 0.025;
               // Make sure the material isn't emitting light
               if (mat.emissive) {
                 mat.emissive.set(0x000000);
@@ -135,7 +134,7 @@ export function DiscoBall({ open }: Props) {
         const maxDim = Math.max(size.x, size.y, size.z);
 
         if (maxDim > 0) {
-          const scale = 2.6 / maxDim;
+          const scale = 3.4 / maxDim;
 
           root.scale.set(scale, scale, scale);
 
@@ -244,9 +243,19 @@ export function DiscoBall({ open }: Props) {
           background: "linear-gradient(to bottom, transparent, var(--club-line))",
         }}
       />
-
+      {/* Soft colored haze around the disco ball */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(251,180,108,0.30) 0%, rgba(255,79,154,0.18) 38%, transparent 70%)",
+          filter: "blur(45px)",
+          opacity: open ? 1.5 : 0.4,
+          transition: "opacity 2s ease",
+        }}
+      />
       {/* Three.js canvas */}
-      <div ref={containerRef} className="relative h-full w-full" />
+      <div ref={containerRef} className="relative z-10 h-full w-full" />{" "}
     </div>
   );
 }

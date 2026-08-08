@@ -20,15 +20,28 @@ function rgbToHex(r: number, g: number, b: number) {
   return "#" + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("");
 }
 
+const paletteCache = new Map<string, Palette>();
+
 /** Pull three ambient light colours out of the artwork, warmed toward 70s film. */
 export function useArtworkPalette(src: string | null | undefined): Palette {
-  const [palette, setPalette] = useState<Palette>(FALLBACK_PALETTE);
+  const [palette, setPalette] = useState<Palette>(() => {
+    if (src && paletteCache.has(src)) {
+      return paletteCache.get(src)!;
+    }
+    return FALLBACK_PALETTE;
+  });
 
   useEffect(() => {
     if (!src || typeof window === "undefined") {
       setPalette(FALLBACK_PALETTE);
       return;
     }
+
+    if (paletteCache.has(src)) {
+      setPalette(paletteCache.get(src)!);
+      return;
+    }
+
     let cancelled = false;
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -75,6 +88,7 @@ export function useArtworkPalette(src: string | null | undefined): Palette {
           .sort((x, y) => y.w - x.w);
 
         if (!ranked.length) {
+          paletteCache.set(src, FALLBACK_PALETTE);
           setPalette(FALLBACK_PALETTE);
           return;
         }
@@ -91,11 +105,13 @@ export function useArtworkPalette(src: string | null | undefined): Palette {
         const second = ranked[1] ?? first;
         const third = ranked[2] ?? second;
 
-        setPalette({
+        const result: Palette = {
           a: gel(first, 1, 1.15),
           b: gel(second, 0.4, 1.1),
           c: gel(third, 1.2, 1.35),
-        });
+        };
+        paletteCache.set(src, result);
+        setPalette(result);
       } catch {
         setPalette(FALLBACK_PALETTE);
       }

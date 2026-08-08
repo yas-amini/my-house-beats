@@ -27,6 +27,8 @@ export function StarFilter({ open, palette }: { open: boolean; palette: Palette 
   const [stars, setStars] = useState<Star[]>([]);
   const idRef = useRef(0);
   const angleRef = useRef(Math.random() * Math.PI * 2);
+  const paletteRef = useRef(palette);
+  paletteRef.current = palette;
 
   useEffect(() => {
     if (!open) {
@@ -65,8 +67,9 @@ export function StarFilter({ open, palette }: { open: boolean; palette: Palette 
         y = rand(48, 88);
       }
 
+      const currentPalette = paletteRef.current;
       const bright = Math.random() < 0.4; // higher chance of hot flash
-      const tint = [palette.c, "#fff6e2", palette.a][Math.floor(Math.random() * 3)] ?? "#fff";
+      const tint = [currentPalette.c, "#fff6e2", currentPalette.a][Math.floor(Math.random() * 3)] ?? "#fff";
 
       const star: Star = {
         key: idRef.current++,
@@ -91,7 +94,7 @@ export function StarFilter({ open, palette }: { open: boolean; palette: Palette 
 
     timer = setTimeout(spawn, rand(200, 700));
     return () => clearTimeout(timer);
-  }, [open, palette.a, palette.c]);
+  }, [open]);
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-[2] overflow-hidden">

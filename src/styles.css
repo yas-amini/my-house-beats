@@ -250,6 +250,22 @@
   }
 }
 
+@property --club-light-a {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #c8622a;
+}
+@property --club-light-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #8d3b6e;
+}
+@property --club-light-c {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e0a24a;
+}
+
 /* ---------------------------------------------------------------
  * CLUB MODE — a 1970s dance floor: warm haze, gelled lights, grain.
  * Scoped to .club so the Archive keeps its restrained cream identity.
@@ -264,6 +280,8 @@
   --club-light-a: #c8622a;
   --club-light-b: #8d3b6e;
   --club-light-c: #e0a24a;
+
+  transition: --club-light-a 1.2s ease-out, --club-light-b 1.2s ease-out, --club-light-c 1.2s ease-out;
 
   background-color: var(--club-bg);
   color: var(--club-ink);
