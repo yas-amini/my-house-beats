@@ -494,3 +494,16 @@
   background: var(--club-accent);
   box-shadow: 0 0 14px var(--club-accent);
 }
+
+/* the club re-gels itself around the current cover art */
+.club-vibe,
+.club-vibe *,
+header.club {
+  transition:
+    background-color 1.6s ease,
+    color 1.6s ease,
+    border-color 1.6s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .club-vibe, .club-vibe *, header.club { transition: none; }
+}
