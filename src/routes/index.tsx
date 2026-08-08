@@ -7,13 +7,13 @@ import { curators, tracks, years } from "@/lib/tracks";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "My House — A Personal House Music Archive" },
+      { title: "My House Beats — A Personal House Music Archive" },
       {
         name: "description",
         content:
           "701 house cuts filed by release year and by the DJ who introduced them. Browse the timeline, follow a curator, or switch on the radio.",
       },
-      { property: "og:title", content: "My House — A Personal House Music Archive" },
+      { property: "og:title", content: "My House Beats — A Personal House Music Archive" },
       {
         property: "og:description",
         content: "701 house cuts, 1987–2026, filed by release year and by the DJ who shared them.",

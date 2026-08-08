@@ -13,13 +13,13 @@ import { floors, profileFor, shuffle, tracksForFloor, type Floor, type FloorSour
 export const Route = createFileRoute("/club")({
   head: () => ({
     meta: [
-      { title: "The Club — Main, Live & Battle Floors" },
+      { title: "The Club — Main, Live & Battle Floors | My House Beats" },
       {
         name: "description",
         content:
           "Three dance floors in one archive: the Main Floor shuffles every record, the Live Floor holds TikTok live DJ discoveries, and the Battle Floor collects playlists built at dance battles.",
       },
-      { property: "og:title", content: "The Club — Main, Live & Battle Floors" },
+      { property: "og:title", content: "The Club — Main, Live & Battle Floors | My House Beats" },
       {
         property: "og:description",
         content:
