@@ -27,7 +27,7 @@ const stats = [
   { label: "Dance floors", value: String(floors.length) },
 ];
 
-export default function About() {
+function About() {
   return (
     <main className="mx-auto max-w-4xl px-5 pb-40 pt-12">
       <p className="font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">

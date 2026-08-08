@@ -19,7 +19,7 @@ export function SiteHeader() {
       style={onAir ? { backgroundColor: "color-mix(in oklab, var(--club-bg) 82%, transparent)" } : undefined}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-3">
-        <Link to="/" className="font-display text-2xl leading-none tracking-wide">
+        <Link to="/" className="font-display text-2xl leading-none tracking-tight">
           My House
         </Link>
         <nav className="flex items-center gap-1">
@@ -29,7 +29,7 @@ export function SiteHeader() {
               <Link
                 key={t.to}
                 to={t.to}
-                className={`rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors ${
+                className={`rounded-full px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.16em] transition-colors ${
                   active
                     ? onAir
                       ? "bg-[var(--club-accent)] text-[#160d08]"
