@@ -113,7 +113,8 @@ export function profileFor(name: string): CuratorProfile | undefined {
   return curatorProfiles.find((p) => p.name === name);
 }
 
-export function displayName(name: string) {
+export function displayName(name: string | null | undefined) {
+  if (!name) return null;
   return profileFor(name)?.display ?? name;
 }
 
@@ -147,9 +148,7 @@ const toSource = (c: Curator, kind: FloorSource["kind"]): FloorSource => ({
   kind,
 });
 
-const liveSources = curators
-  .filter((c) => !platform(c.name) && c.name !== UNCREDITED)
-  .map((c) => toSource(c, "dj"));
+const liveSources = curators.filter((c) => !platform(c.name)).map((c) => toSource(c, "dj"));
 
 const battleSources = curators.filter((c) => platform(c.name)).map((c) => toSource(c, "collection"));
 
