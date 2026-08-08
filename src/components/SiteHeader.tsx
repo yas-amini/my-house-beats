@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 const tabs = [
   { to: "/", label: "Archive" },
   { to: "/club", label: "Club" },
+  { to: "/about", label: "About" },
 ] as const;
 
 export function SiteHeader() {
