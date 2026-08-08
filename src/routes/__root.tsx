@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "My House — House Music Archive" },
-      { name: "description", content: "A curated archive of 627 house music cuts, 1987–2026." },
+      { name: "description", content: "A curated archive of 701 house music cuts, 1987–2026." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
