@@ -11,12 +11,8 @@ export type Track = {
   cover_art?: string | null;
 };
 
-export const UNCREDITED = "Uncredited";
-
-export const tracks: Track[] = (raw as Track[]).map((t) => ({
-  ...t,
-  dj: t.dj ?? UNCREDITED,
-}));
+/** Tracks with no discovery source simply carry `dj: null`. */
+export const tracks: Track[] = (raw as Track[]).map((t) => ({ ...t, dj: t.dj ?? null }));
 
 export function slugify(name: string) {
   return name
@@ -29,7 +25,8 @@ export type Curator = { name: string; slug: string; count: number };
 
 export const curators: Curator[] = Object.values(
   tracks.reduce<Record<string, Curator>>((acc, t) => {
-    const name = t.dj as string;
+    const name = t.dj;
+    if (!name) return acc;
     acc[name] ??= { name, slug: slugify(name), count: 0 };
     acc[name].count += 1;
     return acc;
