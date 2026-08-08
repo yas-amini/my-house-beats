@@ -109,12 +109,17 @@ export function PlayerBar() {
           <p className="truncate font-display text-xl leading-tight tracking-wide">
             {current.artist} — {current.title}
           </p>
-          <p className="truncate font-mono text-[11px]"
+          <p className="truncate font-mono text-xs"
             style={{ color: isClub ? "var(--club-dim)" : undefined }}>
-            Released {current.year ?? "—"} · discovered through{" "}
-            <span style={isClub ? { color: "var(--club-accent)" } : undefined}>
-              {displayName(current.dj as string)}
-            </span>
+            Released {current.year ?? "—"}
+            {current.dj ? (
+              <>
+                {" · discovered through "}
+                <span style={isClub ? { color: "var(--club-accent)" } : undefined}>
+                  {displayName(current.dj)}
+                </span>
+              </>
+            ) : null}
           </p>
         </div>
         {queue.length > 0 && (

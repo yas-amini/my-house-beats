@@ -11,12 +11,8 @@ export type Track = {
   cover_art?: string | null;
 };
 
-export const UNCREDITED = "Uncredited";
-
-export const tracks: Track[] = (raw as Track[]).map((t) => ({
-  ...t,
-  dj: t.dj ?? UNCREDITED,
-}));
+/** Tracks with no discovery source simply carry `dj: null`. */
+export const tracks: Track[] = (raw as Track[]).map((t) => ({ ...t, dj: t.dj ?? null }));
 
 export function slugify(name: string) {
   return name
@@ -29,7 +25,8 @@ export type Curator = { name: string; slug: string; count: number };
 
 export const curators: Curator[] = Object.values(
   tracks.reduce<Record<string, Curator>>((acc, t) => {
-    const name = t.dj as string;
+    const name = t.dj;
+    if (!name) return acc;
     acc[name] ??= { name, slug: slugify(name), count: 0 };
     acc[name].count += 1;
     return acc;
@@ -116,7 +113,8 @@ export function profileFor(name: string): CuratorProfile | undefined {
   return curatorProfiles.find((p) => p.name === name);
 }
 
-export function displayName(name: string) {
+export function displayName(name: string | null | undefined) {
+  if (!name) return null;
   return profileFor(name)?.display ?? name;
 }
 
@@ -144,15 +142,13 @@ const platform = (n: string) => (PLATFORM_SOURCES as readonly string[]).includes
 
 const toSource = (c: Curator, kind: FloorSource["kind"]): FloorSource => ({
   name: c.name,
-  display: displayName(c.name),
+  display: displayName(c.name) ?? c.name,
   slug: c.slug,
   count: c.count,
   kind,
 });
 
-const liveSources = curators
-  .filter((c) => !platform(c.name) && c.name !== UNCREDITED)
-  .map((c) => toSource(c, "dj"));
+const liveSources = curators.filter((c) => !platform(c.name)).map((c) => toSource(c, "dj"));
 
 const battleSources = curators.filter((c) => platform(c.name)).map((c) => toSource(c, "collection"));
 

@@ -61,8 +61,30 @@ function ClubPage() {
   const open = status === "playing";
   const activeSource = floor.sources.find((s) => s.name === sourceName) ?? null;
 
+  /**
+   * The whole room takes its colour from the record on the decks: background,
+   * ink, lines and accent are all re-gelled from the cover art. Applied on the
+   * document element so the sticky header shifts with the page.
+   */
+  const vibe: Record<string, string> = {
+    "--club-bg": `color-mix(in oklab, ${palette.a} 13%, #0b0908)`,
+    "--club-bg-2": `color-mix(in oklab, ${palette.b} 26%, #17110d)`,
+    "--club-ink": `color-mix(in oklab, ${palette.c} 16%, #fbf4ea)`,
+    "--club-dim": `color-mix(in oklab, ${palette.c} 30%, #9b8f83)`,
+    "--club-line": `color-mix(in oklab, ${palette.c} 26%, transparent)`,
+    "--club-accent": palette.c,
+  };
+
+  useEffect(() => {
+    const root = document.documentElement;
+    for (const [k, v] of Object.entries(vibe)) root.style.setProperty(k, v);
+    return () => {
+      for (const k of Object.keys(vibe)) root.style.removeProperty(k);
+    };
+  }, [palette.a, palette.b, palette.c]);
+
   return (
-    <main className="club relative min-h-[calc(100vh-57px)] overflow-hidden">
+    <main className="club club-vibe relative min-h-[calc(100vh-57px)] overflow-hidden" style={vibe}>
       <ClubAtmosphere open={open} palette={palette} />
       <DiscoBall open={open} />
       <StarFilter open={open} palette={palette} />
