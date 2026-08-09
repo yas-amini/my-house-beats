@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { Logo } from "@/components/Logo";
 
 const tabs = [
   { to: "/", label: "Archive" },
@@ -19,8 +20,8 @@ export function SiteHeader() {
       style={onAir ? { backgroundColor: "color-mix(in oklab, var(--club-bg) 82%, transparent)" } : undefined}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-3">
-        <Link to="/" className="font-display text-2xl leading-none tracking-wide">
-          My House Beats
+        <Link to="/" className="flex items-center">
+          <Logo className={`h-16 w-auto sm:h-20 transition-colors ${onAir ? "text-white" : "text-foreground"}`} />
         </Link>
         <nav className="flex items-center gap-1">
           {tabs.map((t) => {
