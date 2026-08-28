@@ -364,6 +364,96 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     applyVolume(muted ? 0 : volume);
   }, [muted, volume, applyVolume]);
 
+  /* ---------- persistence: remember volume + mute across visits ---------- */
+  const hydrated = useRef(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("mhb:sound");
+      if (raw) {
+        const saved = JSON.parse(raw) as { volume?: number; muted?: boolean };
+        if (typeof saved.volume === "number") setVolumeState(Math.max(0, Math.min(100, saved.volume)));
+        if (typeof saved.muted === "boolean") setMuted(saved.muted);
+      }
+    } catch {
+      /* ignore unreadable storage */
+    }
+    hydrated.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated.current) return;
+    try {
+      localStorage.setItem("mhb:sound", JSON.stringify({ volume, muted }));
+    } catch {
+      /* storage may be unavailable */
+    }
+  }, [volume, muted]);
+
+  /* ---------- OS media controls (lock screen, headphones, media keys) ---------- */
+  useEffect(() => {
+    const ms = typeof navigator !== "undefined" ? navigator.mediaSession : undefined;
+    if (!ms || !current) return;
+    ms.metadata = new MediaMetadata({
+      title: current.title,
+      artist: current.artist,
+      album: current.album ?? "My House Beats",
+      artwork: current.cover_art
+        ? [{ src: current.cover_art, sizes: "500x500", type: "image/jpeg" }]
+        : [],
+    });
+    ms.setActionHandler("play", () => toggle());
+    ms.setActionHandler("pause", () => toggle());
+    ms.setActionHandler("nexttrack", () => next());
+    ms.setActionHandler("previoustrack", () => prev());
+    return () => {
+      ms.setActionHandler("play", null);
+      ms.setActionHandler("pause", null);
+      ms.setActionHandler("nexttrack", null);
+      ms.setActionHandler("previoustrack", null);
+    };
+  }, [current, toggle, next, prev]);
+
+  useEffect(() => {
+    const ms = typeof navigator !== "undefined" ? navigator.mediaSession : undefined;
+    if (!ms) return;
+    ms.playbackState = playing ? "playing" : "paused";
+  }, [playing]);
+
+  /* ---------- keyboard transport ---------- */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(input|textarea|select)$/i.test(el.tagName))) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          toggle();
+          break;
+        case "ArrowRight":
+          if (e.shiftKey) {
+            e.preventDefault();
+            next();
+          }
+          break;
+        case "ArrowLeft":
+          if (e.shiftKey) {
+            e.preventDefault();
+            prev();
+          }
+          break;
+        case "m":
+          toggleMute();
+          break;
+        default:
+          break;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toggle, next, prev, toggleMute]);
+
+
   return (
     <PlayerContext.Provider
       value={{
