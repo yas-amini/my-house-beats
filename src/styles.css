@@ -525,3 +525,48 @@ header.club {
 @media (prefers-reduced-motion: reduce) {
   .club-vibe, .club-vibe *, header.club { transition: none; }
 }
+
+/* ------------------------------------------------------------------
+ * ARCHIVE TYPOGRAPHY
+ * Everything the archive page renders (headings, artist names, track
+ * titles, "discovered through" labels, timeline ticks) reads its font
+ * from the variables below. Change them here to restyle the archive
+ * WITHOUT touching the club, about page or the player.
+ * ------------------------------------------------------------------ */
+.archive {
+  --archive-font-hero: var(--font-display);
+  --archive-font-label: var(--font-mono);
+  --archive-font-artist: var(--font-display);
+  --archive-font-title: var(--font-sans);
+  --archive-font-meta: var(--font-mono);
+
+  --archive-hero-tracking: -0.02em;
+  --archive-label-tracking: 0.2em;
+  --archive-artist-size: 1.25rem;
+  --archive-artist-tracking: 0.02em;
+  --archive-title-size: 0.875rem;
+  --archive-meta-size: 0.75rem;
+}
+
+.archive .arc-hero {
+  font-family: var(--archive-font-hero);
+  letter-spacing: var(--archive-hero-tracking);
+}
+.archive .arc-label {
+  font-family: var(--archive-font-label);
+  letter-spacing: var(--archive-label-tracking);
+  text-transform: uppercase;
+}
+.archive .arc-artist {
+  font-family: var(--archive-font-artist);
+  font-size: var(--archive-artist-size);
+  letter-spacing: var(--archive-artist-tracking);
+}
+.archive .arc-title {
+  font-family: var(--archive-font-title);
+  font-size: var(--archive-title-size);
+}
+.archive .arc-meta {
+  font-family: var(--archive-font-meta);
+  font-size: var(--archive-meta-size);
+}
