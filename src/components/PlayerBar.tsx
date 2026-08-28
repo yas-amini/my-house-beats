@@ -215,6 +215,7 @@ export function PlayerBar() {
               value={muted ? 0 : volume}
               onChange={(e) => setVolume(Number(e.target.value))}
               aria-label="Volume"
+              aria-valuetext={`${muted ? 0 : volume} percent`}
               className="absolute inset-y-0 left-0 w-full cursor-pointer opacity-0"
             />
           </div>
@@ -264,6 +265,7 @@ export function PlayerBar() {
             value={position}
             onChange={(e) => seek(Number(e.target.value))}
             aria-label="Seek"
+            aria-valuetext={`${fmt(position)} of ${fmt(duration)}`}
             disabled={!duration}
             className="absolute inset-x-0 top-1/2 h-4 w-full -translate-y-1/2 cursor-pointer opacity-0"
           />
