@@ -30,8 +30,13 @@ type PlayerState = {
   duration: number;
   volume: number;
   muted: boolean;
+  /** upcoming tracks only */
   queue: Track[];
   queueLabel: string | null;
+  shuffling: boolean;
+  toggleShuffle: () => void;
+  /** jump N places forward in the queue (0 = the track right after current) */
+  playAhead: (offset: number) => void;
   select: (track: Track) => void;
   playList: (list: Track[], startIndex?: number, label?: string) => void;
   /** Call synchronously from a click/tap handler to satisfy mobile gesture rules. */
