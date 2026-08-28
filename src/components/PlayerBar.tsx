@@ -26,6 +26,8 @@ export function PlayerBar() {
     muted,
     setVolume,
     toggleMute,
+    shuffling,
+    toggleShuffle,
   } = usePlayer();
   const isClub = useRouterState({
     select: (s) => s.location.pathname.startsWith("/club"),
