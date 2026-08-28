@@ -262,12 +262,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const next = useCallback(() => {
-    setIndex((i) => (queue.length ? (i + 1) % queue.length : 0));
-  }, [queue.length]);
+    setIndex((i) => {
+      if (!queue.length) return 0;
+      if (shuffling && queue.length > 1) {
+        let r = i;
+        while (r === i) r = Math.floor(Math.random() * queue.length);
+        return r;
+      }
+      return (i + 1) % queue.length;
+    });
+  }, [queue.length, shuffling]);
 
   const prev = useCallback(() => {
     setIndex((i) => (queue.length ? (i - 1 + queue.length) % queue.length : 0));
   }, [queue.length]);
+
+  const playAhead = useCallback(
+    (offset: number) => {
+      setIndex((i) => Math.min(queue.length - 1, i + 1 + Math.max(0, offset)));
+    },
+    [queue.length],
+  );
+
+  const toggleShuffle = useCallback(() => setShuffling((s) => !s), []);
 
   useEffect(() => {
     advanceRef.current = next;
