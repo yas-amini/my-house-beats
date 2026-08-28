@@ -38,7 +38,9 @@ export function PlayerBar() {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur ${
+      role="region"
+      aria-label="Player"
+      className={`fixed inset-x-0 bottom-0 z-50 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur ${
         isClub ? "club border-transparent" : "border-border bg-card/95"
       }`}
       style={
