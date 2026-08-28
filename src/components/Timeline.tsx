@@ -28,7 +28,7 @@ export function Timeline({ value, onChange }: Props) {
   return (
     <div className="border-y border-border py-4">
       <div className="flex items-baseline justify-between gap-4 px-1">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="arc-label font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           Release timeline
         </p>
         <div className="flex items-center gap-1">
@@ -88,7 +88,7 @@ export function Timeline({ value, onChange }: Props) {
                 }`}
               />
               <span
-                className={`font-mono text-[9px] tabular-nums transition-colors ${
+                className={`arc-meta font-mono text-[9px] tabular-nums transition-colors ${
                   active
                     ? "text-primary"
                     : decade

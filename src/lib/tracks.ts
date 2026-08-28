@@ -148,7 +148,12 @@ const toSource = (c: Curator, kind: FloorSource["kind"]): FloorSource => ({
   kind,
 });
 
-const liveSources = curators.filter((c) => !platform(c.name)).map((c) => toSource(c, "dj"));
+/** A DJ needs at least this many records to get their own Live Floor entry. */
+export const MIN_FLOOR_TRACKS = 20;
+
+const liveSources = curators
+  .filter((c) => !platform(c.name) && c.count >= MIN_FLOOR_TRACKS)
+  .map((c) => toSource(c, "dj"));
 
 const battleSources = curators.filter((c) => platform(c.name)).map((c) => toSource(c, "collection"));
 

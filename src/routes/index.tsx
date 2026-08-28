@@ -11,12 +11,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "701 house cuts filed by release year and by the DJ who introduced them. Browse the timeline, follow a curator, or switch on the radio.",
+          "806 house cuts filed by release year and by the DJ who introduced them. Browse the timeline, follow a curator, or switch on the radio.",
       },
       { property: "og:title", content: "My House Beats — A Personal House Music Archive" },
       {
         property: "og:description",
-        content: "701 house cuts, 1987–2026, filed by release year and by the DJ who shared them.",
+        content: "806 house cuts, 1987–2026, filed by release year and by the DJ who shared them.",
       },
     ],
   }),
@@ -46,13 +46,13 @@ function Archive() {
   const scopeLabel = [year ? `${year}` : null, curator].filter(Boolean).join(" · ") || "Everything";
 
   return (
-    <main className="mx-auto max-w-6xl px-5 pb-40 pt-10">
+    <main className="archive mx-auto max-w-6xl px-5 pb-40 pt-10">
       <section className="grid gap-6 border-b border-border pb-8 md:grid-cols-[1.4fr_1fr] md:items-end">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">
+          <p className="arc-label font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">
             The archive
           </p>
-          <h1 className="mt-3 font-display text-6xl leading-[0.88] tracking-tight sm:text-8xl">
+          <h1 className="arc-hero mt-3 font-display text-6xl leading-[0.88] tracking-tight sm:text-8xl">
             A decade of
             <br />
             house, filed
@@ -72,7 +72,7 @@ function Archive() {
       </div>
 
       <section className="mt-8">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="arc-label font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
           Discovered through
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -103,7 +103,7 @@ function Archive() {
       </section>
 
       <section className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="arc-label font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
           {scopeLabel} · <span className="tabular-nums text-foreground">{list.length}</span> records
         </p>
         <div className="flex items-center gap-2">
