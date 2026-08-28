@@ -570,3 +570,19 @@ header.club {
   font-family: var(--archive-font-meta);
   font-size: var(--archive-meta-size);
 }
+
+/* ------------------------------------------------------------------
+ * NOW-PLAYING EQUALISER
+ * Three bars that only animate while audio is actually running.
+ * ------------------------------------------------------------------ */
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.eq-bar {
+  transform-origin: bottom;
+  animation: eq 0.9s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eq-bar { animation: none; transform: scaleY(0.6); }
+}

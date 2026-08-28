@@ -30,8 +30,13 @@ type PlayerState = {
   duration: number;
   volume: number;
   muted: boolean;
+  /** upcoming tracks only */
   queue: Track[];
   queueLabel: string | null;
+  shuffling: boolean;
+  toggleShuffle: () => void;
+  /** jump N places forward in the queue (0 = the track right after current) */
+  playAhead: (offset: number) => void;
   select: (track: Track) => void;
   playList: (list: Track[], startIndex?: number, label?: string) => void;
   /** Call synchronously from a click/tap handler to satisfy mobile gesture rules. */
@@ -74,6 +79,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(100);
   const [muted, setMuted] = useState(false);
+  const [shuffling, setShuffling] = useState(false);
   const preMuteVolumeRef = useRef(100);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const widgetRef = useRef<any>(null);
@@ -256,12 +262,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const next = useCallback(() => {
-    setIndex((i) => (queue.length ? (i + 1) % queue.length : 0));
-  }, [queue.length]);
+    setIndex((i) => {
+      if (!queue.length) return 0;
+      if (shuffling && queue.length > 1) {
+        let r = i;
+        while (r === i) r = Math.floor(Math.random() * queue.length);
+        return r;
+      }
+      return (i + 1) % queue.length;
+    });
+  }, [queue.length, shuffling]);
 
   const prev = useCallback(() => {
     setIndex((i) => (queue.length ? (i - 1 + queue.length) % queue.length : 0));
   }, [queue.length]);
+
+  const playAhead = useCallback(
+    (offset: number) => {
+      setIndex((i) => Math.min(queue.length - 1, i + 1 + Math.max(0, offset)));
+    },
+    [queue.length],
+  );
+
+  const toggleShuffle = useCallback(() => setShuffling((s) => !s), []);
 
   useEffect(() => {
     advanceRef.current = next;
@@ -341,6 +364,96 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     applyVolume(muted ? 0 : volume);
   }, [muted, volume, applyVolume]);
 
+  /* ---------- persistence: remember volume + mute across visits ---------- */
+  const hydrated = useRef(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("mhb:sound");
+      if (raw) {
+        const saved = JSON.parse(raw) as { volume?: number; muted?: boolean };
+        if (typeof saved.volume === "number") setVolumeState(Math.max(0, Math.min(100, saved.volume)));
+        if (typeof saved.muted === "boolean") setMuted(saved.muted);
+      }
+    } catch {
+      /* ignore unreadable storage */
+    }
+    hydrated.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated.current) return;
+    try {
+      localStorage.setItem("mhb:sound", JSON.stringify({ volume, muted }));
+    } catch {
+      /* storage may be unavailable */
+    }
+  }, [volume, muted]);
+
+  /* ---------- OS media controls (lock screen, headphones, media keys) ---------- */
+  useEffect(() => {
+    const ms = typeof navigator !== "undefined" ? navigator.mediaSession : undefined;
+    if (!ms || !current) return;
+    ms.metadata = new MediaMetadata({
+      title: current.title,
+      artist: current.artist,
+      album: current.album ?? "My House Beats",
+      artwork: current.cover_art
+        ? [{ src: current.cover_art, sizes: "500x500", type: "image/jpeg" }]
+        : [],
+    });
+    ms.setActionHandler("play", () => toggle());
+    ms.setActionHandler("pause", () => toggle());
+    ms.setActionHandler("nexttrack", () => next());
+    ms.setActionHandler("previoustrack", () => prev());
+    return () => {
+      ms.setActionHandler("play", null);
+      ms.setActionHandler("pause", null);
+      ms.setActionHandler("nexttrack", null);
+      ms.setActionHandler("previoustrack", null);
+    };
+  }, [current, toggle, next, prev]);
+
+  useEffect(() => {
+    const ms = typeof navigator !== "undefined" ? navigator.mediaSession : undefined;
+    if (!ms) return;
+    ms.playbackState = playing ? "playing" : "paused";
+  }, [playing]);
+
+  /* ---------- keyboard transport ---------- */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(input|textarea|select)$/i.test(el.tagName))) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          toggle();
+          break;
+        case "ArrowRight":
+          if (e.shiftKey) {
+            e.preventDefault();
+            next();
+          }
+          break;
+        case "ArrowLeft":
+          if (e.shiftKey) {
+            e.preventDefault();
+            prev();
+          }
+          break;
+        case "m":
+          toggleMute();
+          break;
+        default:
+          break;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toggle, next, prev, toggleMute]);
+
+
   return (
     <PlayerContext.Provider
       value={{
@@ -354,6 +467,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         muted,
         queue: queue.slice(index + 1),
         queueLabel,
+        shuffling,
+        toggleShuffle,
+        playAhead,
         select,
         playList,
         retry,

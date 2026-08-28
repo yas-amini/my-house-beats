@@ -26,6 +26,8 @@ export function PlayerBar() {
     muted,
     setVolume,
     toggleMute,
+    shuffling,
+    toggleShuffle,
   } = usePlayer();
   const isClub = useRouterState({
     select: (s) => s.location.pathname.startsWith("/club"),
@@ -36,7 +38,9 @@ export function PlayerBar() {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur ${
+      role="region"
+      aria-label="Player"
+      className={`fixed inset-x-0 bottom-0 z-50 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur ${
         isClub ? "club border-transparent" : "border-border bg-card/95"
       }`}
       style={
@@ -135,6 +139,32 @@ export function PlayerBar() {
 
         <div className="flex shrink-0 items-center gap-2">
           <button
+            onClick={toggleShuffle}
+            aria-label="Shuffle"
+            aria-pressed={shuffling}
+            title="Shuffle the rest of the queue"
+            className={`hidden h-8 w-8 items-center justify-center rounded-full border transition-colors sm:flex ${
+              isClub
+                ? "border-[color:var(--club-line)]"
+                : shuffling
+                  ? "border-primary text-primary"
+                  : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
+            style={
+              isClub
+                ? { color: shuffling ? "var(--club-accent)" : "var(--club-dim)" }
+                : undefined
+            }
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="16 3 21 3 21 8" />
+              <line x1="4" y1="20" x2="21" y2="3" />
+              <polyline points="21 16 21 21 16 21" />
+              <line x1="15" y1="15" x2="21" y2="21" />
+              <line x1="4" y1="4" x2="9" y2="9" />
+            </svg>
+          </button>
+          <button
             onClick={toggleMute}
             aria-label={muted ? "Unmute" : "Mute"}
             className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
@@ -185,6 +215,7 @@ export function PlayerBar() {
               value={muted ? 0 : volume}
               onChange={(e) => setVolume(Number(e.target.value))}
               aria-label="Volume"
+              aria-valuetext={`${muted ? 0 : volume} percent`}
               className="absolute inset-y-0 left-0 w-full cursor-pointer opacity-0"
             />
           </div>
@@ -234,6 +265,7 @@ export function PlayerBar() {
             value={position}
             onChange={(e) => seek(Number(e.target.value))}
             aria-label="Seek"
+            aria-valuetext={`${fmt(position)} of ${fmt(duration)}`}
             disabled={!duration}
             className="absolute inset-x-0 top-1/2 h-4 w-full -translate-y-1/2 cursor-pointer opacity-0"
           />
