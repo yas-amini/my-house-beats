@@ -47,7 +47,7 @@ function Archive() {
   const { year = null, dj: curator = null, q = "", view = "grid" } = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
 
-  const setSearch = (next: Partial<ArchiveSearch>) => {
+  const setSearch = (next: { [K in keyof ArchiveSearch]?: ArchiveSearch[K] | undefined }) => {
     void navigate({
       search: (prev) => {
         const merged = { ...prev, ...next } as Record<string, unknown>;
