@@ -51,16 +51,16 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                 )}
                 <span className="min-w-0">
                   <span
-                    className={`block truncate text-sm font-semibold ${active ? "text-primary" : ""}`}
+                    className={`arc-artist block truncate text-sm font-semibold ${active ? "text-primary" : ""}`}
                   >
                     {t.artist}
                   </span>
-                  <span className="block truncate text-sm text-muted-foreground">{t.title}</span>
+                  <span className="arc-title block truncate text-sm text-muted-foreground">{t.title}</span>
                 </span>
-                <span className="hidden truncate font-mono text-xs text-muted-foreground sm:block">
+                <span className="arc-meta hidden truncate font-mono text-xs text-muted-foreground sm:block">
                   {t.dj ? `via ${displayName(t.dj)}` : ""}
                 </span>
-                <span className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+                <span className="arc-meta text-right font-mono text-[11px] tabular-nums text-muted-foreground">
                   {t.year ?? "—"}
                 </span>
               </button>
@@ -113,16 +113,16 @@ export function TrackCollection({ list, view = "grid", emptyLabel, queueLabel }:
                 )}
               </div>
               <h3
-                className={`mt-3 truncate font-display text-xl leading-tight tracking-wide ${
+                className={`arc-artist mt-3 truncate font-display text-xl leading-tight tracking-wide ${
                   active ? "text-primary" : ""
                 }`}
               >
                 {t.artist}
               </h3>
-              <p className="truncate text-sm text-muted-foreground">{t.title}</p>
+              <p className="arc-title truncate text-sm text-muted-foreground">{t.title}</p>
             </button>
             {t.dj && (
-              <p className="mt-1.5 truncate font-mono text-xs text-muted-foreground">
+              <p className="arc-meta mt-1.5 truncate font-mono text-xs text-muted-foreground">
                 via {displayName(t.dj)}
               </p>
             )}
