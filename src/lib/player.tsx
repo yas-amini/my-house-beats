@@ -58,11 +58,13 @@ declare global {
   }
 }
 
-/** A silent placeholder so the widget exists (and is gesture-eligible) before any track is picked. */
-const BOOT_URL =
-  "https://w.soundcloud.com/player/?url=" +
-  encodeURIComponent("https://soundcloud.com/soundcloud/tracks") +
-  "&auto_play=false&visual=false";
+function widgetUrl(url: string) {
+  return (
+    "https://w.soundcloud.com/player/?url=" +
+    encodeURIComponent(url) +
+    "&auto_play=true&visual=false"
+  );
+}
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [queue, setQueue] = useState<Track[]>([]);
@@ -81,49 +83,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const loadTokenRef = useRef(0);
   const advanceRef = useRef<() => void>(() => {});
   const watchdogRef = useRef<number | null>(null);
-  /** resolves once the SC widget instance exists */
-  const readyRef = useRef<Promise<any> | null>(null);
 
   const current = queue[index] ?? null;
 
-  /**
-   * Boot the widget as early as possible — on mount, not on first track.
-   * Mobile browsers only honour play() that originates from a user gesture, so
-   * the widget must already exist when the user taps; creating the iframe
-   * inside a later effect meant the tap had expired by the time we asked to play.
-   */
+  // Load SoundCloud API script once
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (readyRef.current) return;
-
-    readyRef.current = new Promise((resolve) => {
-      const boot = () => {
-        if (!iframeRef.current || !window.SC) return false;
-        if (!iframeRef.current.src) iframeRef.current.src = BOOT_URL;
-        const w = window.SC.Widget(iframeRef.current);
-        widgetRef.current = w;
-        w.bind("ready", () => resolve(w));
-        // Some browsers fire ready before we bind; resolve defensively too.
-        window.setTimeout(() => resolve(w), 1500);
-        return true;
-      };
-
-      if (!window.SC) {
-        const existing = document.querySelector<HTMLScriptElement>("script[data-sc-api]");
-        if (!existing) {
-          const s = document.createElement("script");
-          s.src = "https://w.soundcloud.com/player/api.js";
-          s.async = true;
-          s.dataset["scApi"] = "1";
-          document.body.appendChild(s);
-        }
-      }
-      if (iframeRef.current && !iframeRef.current.src) iframeRef.current.src = BOOT_URL;
-
-      const timer = window.setInterval(() => {
-        if (boot()) window.clearInterval(timer);
-      }, 120);
-    });
+    if (typeof window === "undefined" || window.SC) return;
+    const existing = document.querySelector<HTMLScriptElement>("script[data-sc-api]");
+    if (!existing) {
+      const s = document.createElement("script");
+      s.src = "https://w.soundcloud.com/player/api.js";
+      s.async = true;
+      s.dataset["scApi"] = "1";
+      document.body.appendChild(s);
+    }
   }, []);
 
   const clearWatchdog = () => {
@@ -149,6 +122,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     w.unbind("finish");
     w.unbind("playProgress");
     w.unbind("error");
+
     w.bind("play", () => {
       if (token !== loadTokenRef.current) return;
       clearWatchdog();
@@ -181,9 +155,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     w.getDuration((d: number) => {
       if (token === loadTokenRef.current) setDuration(d);
     });
-  }, []);
 
-  /** Load + attempt playback. Never marks "playing" until the widget confirms it. */
+    applyVolume(muted ? 0 : volume);
+  }, [applyVolume, muted, volume]);
+
+  /** Load + attempt playback for the active track */
   const loadCurrent = useCallback(
     (track: Track) => {
       if (!track.soundcloud_url) return;
@@ -194,34 +170,64 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setStatus("loading");
       clearWatchdog();
 
-      // If the browser silently refuses, surface a retry action instead of a fake playing state.
       watchdogRef.current = window.setTimeout(() => {
         setStatus((s) => (s === "playing" ? s : "blocked"));
       }, 4000);
 
-      const w = widgetRef.current;
-      const run = (widget: any) => {
-        if (token !== loadTokenRef.current) return;
-        widget.load(track.soundcloud_url, {
-          auto_play: true,
-          visual: false,
-          callback: () => {
-            if (token !== loadTokenRef.current) return;
-            bind(widget, token);
-            setStatus((s) => (s === "playing" ? s : "ready"));
-            // Ask again explicitly: some mobile builds ignore auto_play on load.
-            try {
-              widget.play();
-            } catch {
-              /* handled by the watchdog */
-            }
-          },
-        });
-      };
+      // If a working widget already exists, swap track via widget.load
+      if (widgetRef.current) {
+        const w = widgetRef.current;
+        try {
+          w.load(track.soundcloud_url, {
+            auto_play: true,
+            visual: false,
+            callback: () => {
+              if (token !== loadTokenRef.current) return;
+              bind(w, token);
+              setStatus((s) => (s === "playing" ? s : "ready"));
+              try {
+                w.play();
+              } catch {
+                /* handled by watchdog */
+              }
+            },
+          });
+          return;
+        } catch {
+          // Fall through to iframe.src reload on error
+        }
+      }
 
-      // Synchronous path keeps us inside the user gesture whenever possible.
-      if (w) run(w);
-      else readyRef.current?.then(run);
+      // Initial boot or fallback: load directly via iframe src
+      if (!iframeRef.current) return;
+      iframeRef.current.src = widgetUrl(track.soundcloud_url);
+
+      let cancelled = false;
+      const timer = window.setInterval(() => {
+        if (cancelled || !window.SC || !iframeRef.current) return;
+        window.clearInterval(timer);
+        try {
+          const w = window.SC.Widget(iframeRef.current);
+          widgetRef.current = w;
+          w.bind("ready", () => {
+            if (token !== loadTokenRef.current) return;
+            bind(w, token);
+            setStatus((s) => (s === "playing" ? s : "ready"));
+            try {
+              w.play();
+            } catch {
+              /* handled by watchdog */
+            }
+          });
+        } catch {
+          /* handled by watchdog */
+        }
+      }, 100);
+
+      return () => {
+        cancelled = true;
+        window.clearInterval(timer);
+      };
     },
     [bind],
   );
